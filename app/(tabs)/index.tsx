@@ -1,74 +1,416 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import React, { useState } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  ScrollView, 
+  TouchableOpacity,
+  SafeAreaView,
+  StatusBar,
+  Image,
+  Platform
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../../constants/Theme';
+import BudgetCard from '../../components/BudgetCard';
+import TransactionItem from '../../components/TransactionItem';
+import InsightCard from '../../components/InsightCard';
+import AddExpenseFAB from '../../components/AddExpenseFAB';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+// Mock data for demonstration
+const mockCategories = [
+  { id: '1', name: 'Food', icon: 'restaurant', color: '#F97316', spent: 320, budget: 400 },
+  { id: '2', name: 'Transport', icon: 'car', color: '#8B5CF6', spent: 150, budget: 200 },
+  { id: '3', name: 'Shopping', icon: 'bag-handle', color: '#EC4899', spent: 210, budget: 300 },
+  { id: '4', name: 'Entertainment', icon: 'film', color: '#06B6D4', spent: 80, budget: 100 },
+];
 
-export default function HomeScreen() {
+const mockTransactions = [
+  { id: '1', title: 'Grocery Store', amount: 45.67, category: 'food', date: new Date(2025, 3, 2) },
+  { id: '2', title: 'Uber Ride', amount: 12.50, category: 'transport', date: new Date(2025, 3, 1) },
+  { id: '3', title: 'Coffee Shop', amount: 4.25, category: 'food', date: new Date(2025, 3, 1) },
+  { id: '4', title: 'Amazon Purchase', amount: 29.99, category: 'shopping', date: new Date(2025, 2, 30) },
+  { id: '5', title: 'Movie Tickets', amount: 22.00, category: 'entertainment', date: new Date(2025, 2, 28) },
+];
+
+const mockInsights = [
+  { 
+    id: '1', 
+    title: 'Unusual spending detected', 
+    description: 'Your food expenses this week are 30% higher than your weekly average. Consider checking your receipts.',
+    type: 'warning'
+  },
+  { 
+    id: '2', 
+    title: 'Save $120 next month', 
+    description: 'Based on your spending patterns, switching to this grocery store could save you approximately $120 next month.',
+    type: 'tip'
+  },
+  { 
+    id: '3', 
+    title: 'Entertainment budget forecast', 
+    description: "At your current rate, you'll exceed your entertainment budget by $45 this month.",
+    type: 'warning'
+  },
+];
+
+export default function Dashboard() {
+  const router = useRouter();
+  const totalBudget = 2000;
+  const totalSpent = 1250;
+  const [insights, setInsights] = useState(mockInsights);
+  const dismissInsight = (id: string) => {
+    setInsights(insights.filter(insight => insight.id !== id));
+  };
+
+  const handleViewAllTransactions = () => {
+    router.push('/transactions');
+  };
+
+  const handleViewAllBudgets = () => {
+    router.push('/budgets');
+  };
+
+  const handleViewAllInsights = () => {
+    router.push('/analytics');
+  };
+
+  const handleAddExpenseManual = () => {
+    router.push('/add/manual');
+  };
+  const handleLogin = () => {
+    router.push('/login');
+  };
+
+  const handleAddExpenseVoice = () => {
+    // Open voice recording interface
+    console.log('Open voice recording interface');
+  };
+
+  const handleAddExpenseScan = () => {
+    router.push('/add/scan');
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
+      
+      {/* Header */}
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.greeting}>Hello, Alex</Text>
+          <Text style={styles.date}>April 3, 2025</Text>
+        </View>
+        <View style={styles.headerButtons}>
+          <TouchableOpacity style={styles.iconButton} onPress={handleLogin}>
+            <Ionicons name="notifications-outline" size={24} color={Colors.textPrimary} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.iconButton}>
+            <Ionicons name="settings-outline" size={24} color={Colors.textPrimary} />
+          </TouchableOpacity>
+        </View>
+      </View>
+      
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Total Budget Card */}
+        <View style={styles.budgetCard}>
+          <View style={styles.budgetCardHeader}>
+            <Text style={styles.budgetCardTitle}>Total Budget</Text>
+            <View style={styles.budgetPeriod}>
+              <Text style={styles.budgetPeriodText}>April 2025</Text>
+              <Ionicons name="chevron-down" size={16} color={Colors.textSecondary} />
+            </View>
+          </View>
+          
+          <View style={styles.budgetAmount}>
+            <Text style={styles.spentAmount}>${totalSpent}</Text>
+            <Text style={styles.totalAmount}>/${totalBudget}</Text>
+          </View>
+          
+          <View style={styles.progressBarContainer}>
+            <View 
+              style={[
+                styles.progressBar, 
+                { width: `${(totalSpent / totalBudget) * 100}%` }
+              ]} 
+            />
+          </View>
+          
+          <View style={styles.budgetStats}>
+            <View style={styles.budgetStat}>
+              <View style={[styles.statIndicator, { backgroundColor: Colors.primary }]} />
+              <Text style={styles.statLabel}>Spent</Text>
+              <Text style={styles.statValue}>${totalSpent}</Text>
+            </View>
+            <View style={styles.budgetStat}>
+              <View style={[styles.statIndicator, { backgroundColor: Colors.border }]} />
+              <Text style={styles.statLabel}>Remaining</Text>
+              <Text style={styles.statValue}>${totalBudget - totalSpent}</Text>
+            </View>
+          </View>
+        </View>
+        
+        {/* AI Insights */}
+        <View style={styles.sectionContainer}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>AI Insights</Text>
+            <TouchableOpacity onPress={handleViewAllInsights}>
+              <Text style={styles.seeAllText}>See All</Text>
+            </TouchableOpacity>
+          </View>
+          
+          {insights.length > 0 ? (
+            insights.map((insight) => (
+              <InsightCard
+                key={insight.id}
+                title={insight.title}
+                description={insight.description}
+                type={insight.type as 'warning' | 'tip'}
+                onDismiss={() => dismissInsight(insight.id)}
+              />
+            ))
+          ) : (
+            <View style={styles.emptyInsightContainer}>
+              <Ionicons name="checkmark-circle" size={48} color={Colors.success} />
+              <Text style={styles.emptyInsightText}>You are all caught up!</Text>
+              <Text style={styles.emptyInsightSubtext}>No new insights at the moment.</Text>
+            </View>
+          )}
+        </View>
+        
+        {/* Budget Categories */}
+        <View style={styles.sectionContainer}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Budget Categories</Text>
+            <TouchableOpacity onPress={handleViewAllBudgets}>
+              <Text style={styles.seeAllText}>See All</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoriesContainer}
+          >
+            {mockCategories.map((category) => (
+              <BudgetCard
+                key={category.id}
+                title={category.name}
+                currentAmount={category.spent}
+                budgetAmount={category.budget}
+                icon={category.icon}
+                color={category.color}
+              />
+            ))}
+          </ScrollView>
+        </View>
+        
+        {/* Recent Transactions */}
+        <View style={styles.sectionContainer}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Recent Transactions</Text>
+            <TouchableOpacity onPress={handleViewAllTransactions}>
+              <Text style={styles.seeAllText}>See All</Text>
+            </TouchableOpacity>
+          </View>
+          
+          {mockTransactions.map((transaction) => (
+            <TransactionItem
+              key={transaction.id}
+              amount={transaction.amount}
+              category={transaction.category as any}
+              title={transaction.title}
+              date={transaction.date}
+              isExpense={true}
+            />
+          ))}
+        </View>
+      </ScrollView>
+
+      {/* Add Expense FAB */}
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.m,
+    paddingTop: Spacing.m,
+    paddingBottom: Spacing.s,
+  },
+  greeting: {
+    fontSize: FontSize.l,
+    fontWeight: 'bold',
+    color: Colors.textPrimary,
+  },
+  date: {
+    fontSize: FontSize.s,
+    color: Colors.textSecondary,
+    marginTop: 2,
+  },
+  headerButtons: {
+    flexDirection: 'row',
+  },
+  iconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.cardBackground,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: Spacing.s,
+    ...Shadow.small,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: Spacing.m,
+  },
+  budgetCard: {
+    backgroundColor: Colors.cardBackground,
+    borderRadius: BorderRadius.m,
+    padding: Spacing.m,
+    marginBottom: Spacing.m,
+    ...Shadow.medium,
+  },
+  budgetCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.s,
+  },
+  budgetCardTitle: {
+    fontSize: FontSize.m,
+    fontWeight: '600',
+    color: Colors.textPrimary,
+  },
+  budgetPeriod: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  budgetPeriodText: {
+    fontSize: FontSize.xs,
+    color: Colors.textSecondary,
+    marginRight: 4,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  budgetAmount: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginBottom: Spacing.s,
+  },
+  spentAmount: {
+    fontSize: FontSize.xl,
+    fontWeight: 'bold',
+    color: Colors.textPrimary,
+  },
+  totalAmount: {
+    fontSize: FontSize.m,
+    color: Colors.textSecondary,
+    marginLeft: 4,
+  },
+  progressBarContainer: {
+    height: 8,
+    backgroundColor: Colors.border,
+    borderRadius: 4,
+    marginBottom: Spacing.m,
+    overflow: 'hidden',
+  },
+  progressBar: {
+    height: '100%',
+    backgroundColor: Colors.primary,
+    borderRadius: 4,
+  },
+  budgetStats: {
+    flexDirection: 'row',
+  },
+  budgetStat: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statIndicator: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: Spacing.xs,
+  },
+  statLabel: {
+    fontSize: FontSize.xs,
+    color: Colors.textSecondary,
+    marginRight: Spacing.xs,
+  },
+  statValue: {
+    fontSize: FontSize.s,
+    fontWeight: '600',
+    color: Colors.textPrimary,
+  },
+  sectionContainer: {
+    marginBottom: Spacing.m,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.s,
+  },
+  sectionTitle: {
+    fontSize: FontSize.m,
+    fontWeight: '600',
+    color: Colors.textPrimary,
+  },
+  seeAllText: {
+    fontSize: FontSize.s,
+    color: Colors.primary,
+  },
+  insightsContainer: {
+    paddingBottom: Spacing.s,
+    flexDirection:'column',
+  },
+  categoriesContainer: {
+    paddingBottom: Spacing.s,
+    gap: Spacing.m,
+  },
+  emptyInsightContainer: {
+    backgroundColor: Colors.cardBackground,
+    borderRadius: BorderRadius.m,
+    padding: Spacing.xl,
+    marginVertical: Spacing.s,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...Shadow.medium,
+    borderLeftWidth: 4,
+    borderLeftColor: Colors.success,
+  },
+  emptyInsightText: {
+    fontSize: FontSize.l,
+    fontWeight: '600',
+    color: Colors.textPrimary,
+    marginTop: Spacing.m,
+    marginBottom: Spacing.xs,
+  },
+  emptyInsightSubtext: {
+    fontSize: FontSize.s,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+  },
+  tabBar: {
+    flexDirection: 'row',
+    backgroundColor: Colors.cardBackground,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+    height: 60,
+    paddingBottom: Platform.OS === 'ios' ? 20 : 0,
+  },
+  tabItem: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

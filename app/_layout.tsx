@@ -1,39 +1,29 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
+import { Slot, Stack } from 'expo-router';
 import { useEffect } from 'react';
-import 'react-native-reanimated';
+import { useRouter, useSegments } from 'expo-router';
 
-import { useColorScheme } from '@/hooks/useColorScheme';
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
-
+// This layout serves as the root layout for all screens
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
+  const router = useRouter();
+  const segments = useSegments();
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
+    // When the app loads initially, redirect to the login screen
+    const inAuthGroup = segments[0] === '(tabs)';
+    const isAuthScreen = segments[0] === 'login' || segments[0] === 'signup';
+    
+    // If user is not authenticated and not on an auth screen, redirect to login
+    if (!inAuthGroup && !isAuthScreen) {
+      router.replace('/login');
     }
-  }, [loaded]);
-
-  if (!loaded) {
-    return null;
-  }
+  }, [segments]);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        animation: 'slide_from_right',
+      }}
+    />
   );
 }
