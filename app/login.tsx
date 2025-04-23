@@ -7,23 +7,34 @@ import {
   TouchableOpacity,
   SafeAreaView,
   StatusBar,
-  Image,
   KeyboardAvoidingView,
   Platform
 } from 'react-native';
+import { auth } from './config/firebase';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../constants/Theme';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [secureTextEntry, setSecureTextEntry] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = () => {
-    // No authentication logic yet, just navigate to dashboard
-    router.replace('/(tabs)');
+  const handleLogin = async () => {
+    setIsLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      console.log("Login successful");
+      console.log(auth.currentUser);
+      router.replace('/(tabs)');
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSignUp = () => {

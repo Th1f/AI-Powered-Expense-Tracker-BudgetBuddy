@@ -17,6 +17,7 @@ import BudgetCard from '../../components/BudgetCard';
 import TransactionItem from '../../components/TransactionItem';
 import InsightCard from '../../components/InsightCard';
 import AddExpenseFAB from '../../components/AddExpenseFAB';
+import { getUser } from '../config/backend';
 
 // Mock data for demonstration
 const mockCategories = [
@@ -92,11 +93,13 @@ export default function Dashboard() {
     router.push('/add/scan');
   };
 
+  const handleSettings = () => {
+    getUser();
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
-      
-      {/* Header */}
       <View style={styles.header}>
         <View>
           <Text style={styles.greeting}>Hello, Alex</Text>
@@ -106,14 +109,12 @@ export default function Dashboard() {
           <TouchableOpacity style={styles.iconButton} onPress={handleLogin}>
             <Ionicons name="notifications-outline" size={24} color={Colors.textPrimary} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
+          <TouchableOpacity style={styles.iconButton} onPress={handleSettings}>
             <Ionicons name="settings-outline" size={24} color={Colors.textPrimary} />
           </TouchableOpacity>
         </View>
       </View>
-      
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Total Budget Card */}
         <View style={styles.budgetCard}>
           <View style={styles.budgetCardHeader}>
             <Text style={styles.budgetCardTitle}>Total Budget</Text>
@@ -122,12 +123,10 @@ export default function Dashboard() {
               <Ionicons name="chevron-down" size={16} color={Colors.textSecondary} />
             </View>
           </View>
-          
           <View style={styles.budgetAmount}>
             <Text style={styles.spentAmount}>${totalSpent}</Text>
             <Text style={styles.totalAmount}>/${totalBudget}</Text>
           </View>
-          
           <View style={styles.progressBarContainer}>
             <View 
               style={[
@@ -136,7 +135,6 @@ export default function Dashboard() {
               ]} 
             />
           </View>
-          
           <View style={styles.budgetStats}>
             <View style={styles.budgetStat}>
               <View style={[styles.statIndicator, { backgroundColor: Colors.primary }]} />
@@ -150,8 +148,6 @@ export default function Dashboard() {
             </View>
           </View>
         </View>
-        
-        {/* AI Insights */}
         <View style={styles.sectionContainer}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>AI Insights</Text>
@@ -159,14 +155,13 @@ export default function Dashboard() {
               <Text style={styles.seeAllText}>See All</Text>
             </TouchableOpacity>
           </View>
-          
           {insights.length > 0 ? (
             insights.map((insight) => (
               <InsightCard
                 key={insight.id}
                 title={insight.title}
                 description={insight.description}
-                type={insight.type as 'warning' | 'tip'}
+                type={insight.type as 'warning' | 'tip' | 'prediction'}
                 onDismiss={() => dismissInsight(insight.id)}
               />
             ))
@@ -178,8 +173,6 @@ export default function Dashboard() {
             </View>
           )}
         </View>
-        
-        {/* Budget Categories */}
         <View style={styles.sectionContainer}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Budget Categories</Text>
@@ -187,7 +180,6 @@ export default function Dashboard() {
               <Text style={styles.seeAllText}>See All</Text>
             </TouchableOpacity>
           </View>
-          
           <ScrollView 
             horizontal 
             showsHorizontalScrollIndicator={false}
@@ -205,8 +197,6 @@ export default function Dashboard() {
             ))}
           </ScrollView>
         </View>
-        
-        {/* Recent Transactions */}
         <View style={styles.sectionContainer}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Recent Transactions</Text>
@@ -214,7 +204,6 @@ export default function Dashboard() {
               <Text style={styles.seeAllText}>See All</Text>
             </TouchableOpacity>
           </View>
-          
           {mockTransactions.map((transaction) => (
             <TransactionItem
               key={transaction.id}
@@ -227,8 +216,6 @@ export default function Dashboard() {
           ))}
         </View>
       </ScrollView>
-
-      {/* Add Expense FAB */}
     </SafeAreaView>
   );
 }

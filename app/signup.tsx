@@ -14,6 +14,9 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../constants/Theme';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth } from './config/firebase';
+import { createUser } from './config/backend';
 
 export default function SignUp() {
   const router = useRouter();
@@ -24,8 +27,15 @@ export default function SignUp() {
   const [secureTextEntry, setSecureTextEntry] = useState(true);
   const [secureConfirmTextEntry, setSecureConfirmTextEntry] = useState(true);
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     // No authentication logic yet, just navigate to dashboard
+
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      await createUser(fullName);
+    } catch (error) {
+      
+    }
     router.replace('/(tabs)');
   };
 

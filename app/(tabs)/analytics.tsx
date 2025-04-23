@@ -156,8 +156,6 @@ export default function Analytics() {
           headerShadowVisible: false,
         }}
       />
-      
-      {/* Time Period Toggle */}
       <View style={styles.timeToggleContainer}>
         <TouchableOpacity 
           style={[
@@ -194,7 +192,6 @@ export default function Analytics() {
       </View>
       
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Monthly Spending Overview */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>{timeView === 'monthly' ? 'Monthly' : 'Weekly'} Spending Overview</Text>
           <View style={styles.chartContainer}>
@@ -227,14 +224,11 @@ export default function Analytics() {
             </View>
           </View>
         </View>
-        
-        {/* Spending Breakdown */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Spending Breakdown</Text>
           {renderSpendingBreakdown()}
         </View>
         
-        {/* AI Insights */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>AI Insights</Text>
         </View>
