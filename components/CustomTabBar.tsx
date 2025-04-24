@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useRouter } from 'expo-router';
 import { View, Text, TouchableOpacity, StyleSheet, Platform, Animated, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
@@ -30,6 +31,7 @@ const TAB_ITEMS = [
 ];
 
 export default function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const animation = useState(new Animated.Value(0))[0];
 
@@ -51,10 +53,9 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
   const handleAction = (route: string) => {
     // Close the menu first
     toggleMenu();
-    
     // Navigate after a small delay to allow animation to start
     setTimeout(() => {
-      navigation.navigate(route);
+      router.push(route as any);
     }, 300);
   };
 

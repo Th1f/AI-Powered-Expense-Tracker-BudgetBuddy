@@ -10,10 +10,11 @@ import {
 } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-
+import { fetchUserData } from '../config/backend';
 import TransactionItem from '@/components/TransactionItem';
 import { Colors, FontSize, Spacing, BorderRadius, Shadow } from '@/constants/Theme';
 import { auth } from '../config/firebase';
+import { UserData } from '../types';
 
 // Type definitions
 interface Transaction {
@@ -95,6 +96,13 @@ export default function TabTransactions() {
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>(mockTransactions);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [userData, setUserData] = useState<UserData | null>(null);
+
+  useEffect(() => {
+    fetchUserData().then((userData) => {
+      setUserData(userData);
+    });
+  }, []);
   
   const filters = [
     { id: 'all', label: 'All', icon: 'list' },

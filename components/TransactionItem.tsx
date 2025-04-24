@@ -94,7 +94,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({
             {amountPrefix}${amount.toFixed(2)}
           </Text>
         </View>
-        <View style={styles.detailsRow}>r
+        <View style={styles.detailsRow}>
           <Text style={styles.category}>
             {category.charAt(0).toUpperCase() + category.slice(1)}
           </Text>

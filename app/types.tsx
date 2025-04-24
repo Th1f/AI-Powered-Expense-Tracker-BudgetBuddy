@@ -14,4 +14,5 @@ export interface UserData {
     budget: number;
     used_budget: number;
     error: boolean;
+    transactions: Transaction[];
 }

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions } from '
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../constants/Theme';
+import { router, useRouter } from 'expo-router';
 
 interface AddExpenseFABProps {
   onPressManual: () => void;
