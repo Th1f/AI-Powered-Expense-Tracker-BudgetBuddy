@@ -15,9 +15,11 @@ import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Haptics from 'expo-haptics';
 import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../../constants/Theme';
+import { fetchUserData,addExpense } from '../config/backend';
+import { Transaction, UserData } from '../types';
 
 // Define category type
-type CategoryType = 'food' | 'transport' | 'shopping' | 'entertainment' | 'housing' | 'utilities' | 'health' | 'other';
+type CategoryType = 'food' | 'transport' | 'shopping' | 'entertainment' | 'housing' | 'health' | 'other';
 
 // Define category interface
 interface Category {
@@ -33,7 +35,6 @@ const categories: Category[] = [
   { id: 'shopping', name: 'Shopping', icon: 'bag-handle', color: '#EC4899' },
   { id: 'entertainment', name: 'Entertainment', icon: 'film', color: '#06B6D4' },
   { id: 'housing', name: 'Housing', icon: 'home', color: '#10B981' },
-  { id: 'utilities', name: 'Utilities', icon: 'flash', color: '#F59E0B' },
   { id: 'health', name: 'Health', icon: 'medkit', color: '#EF4444' },
   { id: 'other', name: 'Other', icon: 'ellipsis-horizontal', color: '#6B7280' },
 ];
@@ -46,6 +47,13 @@ export default function ManualExpenseScreen() {
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [user, setUser] = useState<UserData | null>(null);
+  
+  useEffect(() => {
+    fetchUserData().then((userData) => {
+      setUser(userData);
+    });
+  }, []);
   
   // Animation values
   const saveButtonAnim = useRef(new Animated.Value(1)).current;
@@ -88,6 +96,17 @@ export default function ManualExpenseScreen() {
     ]).start();
     
     // Simulate API call with timeout
+    const expense: Transaction = {
+      id: (user?.transactions?.length ? user.transactions.length + 1 : 1).toString(),
+      title: description,
+      amount: parseFloat(amount),
+      category: selectedCategory.id,
+      date: date,
+      isExpense: true
+    };
+
+    addExpense(expense);
+
     setTimeout(() => {
       setIsSaving(false);
       router.push('/');

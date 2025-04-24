@@ -15,16 +15,11 @@ import TransactionItem from '@/components/TransactionItem';
 import { Colors, FontSize, Spacing, BorderRadius, Shadow } from '@/constants/Theme';
 import { auth } from '../config/firebase';
 import { UserData } from '../types';
+import { CategoryType } from '../types';
+import { Transaction } from '../types';
 
 // Type definitions
-interface Transaction {
-  id: string;
-  title: string;
-  amount: number;
-  category: 'food' | 'transport' | 'shopping' | 'entertainment' | 'health' | 'housing' | 'income' | 'other';
-  date: Date;
-  isExpense: boolean;
-}
+
 
 interface TransactionGroup {
   title: string;
@@ -36,7 +31,7 @@ const mockTransactions: Transaction[] = [
   { id: '1', title: 'Grocery Store', amount: 45.67, category: 'food', date: new Date(2025, 3, 2), isExpense: true },
   { id: '2', title: 'Uber Ride', amount: 12.50, category: 'transport', date: new Date(2025, 3, 1), isExpense: true },
   { id: '3', title: 'Movie Tickets', amount: 24.00, category: 'entertainment', date: new Date(2025, 3, 1), isExpense: true },
-  { id: '4', title: 'Salary Deposit', amount: 2500.00, category: 'income', date: new Date(2025, 2, 28), isExpense: false },
+  { id: '4', title: 'Salary Deposit', amount: 2500.00, category: 'other', date: new Date(2025, 2, 28), isExpense: false },
   { id: '5', title: 'Rent Payment', amount: 1200.00, category: 'housing', date: new Date(2025, 2, 27), isExpense: true },
   { id: '6', title: 'Pharmacy', amount: 32.40, category: 'health', date: new Date(2025, 2, 25), isExpense: true },
   { id: '7', title: 'Online Shopping', amount: 78.50, category: 'shopping', date: new Date(2025, 2, 23), isExpense: true },
@@ -47,6 +42,7 @@ const groupTransactionsByDate = (transactions: Transaction[]): TransactionGroup[
   const groups: Record<string, Transaction[]> = {};
   
   transactions.forEach(transaction => {
+    console.log(transaction);
     const date = transaction.date;
     const dateKey = date.toISOString().split('T')[0];
     
@@ -92,17 +88,13 @@ const formatDateHeader = (date: Date): string => {
 
 export default function TabTransactions() {
   const router = useRouter();
-  const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
-  const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>(mockTransactions);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [userData, setUserData] = useState<UserData | null>(null);
 
-  useEffect(() => {
-    fetchUserData().then((userData) => {
-      setUserData(userData);
-    });
-  }, []);
+  
   
   const filters = [
     { id: 'all', label: 'All', icon: 'list' },
@@ -116,7 +108,8 @@ export default function TabTransactions() {
   
   const filterTransactions = (filterId: string, query: string) => {
     let filtered = [...transactions];
-    
+    console.log("Filtered")
+    console.log(transactions)
     // Apply type filter
     if (filterId === 'expense') {
       filtered = filtered.filter(t => t.isExpense);
@@ -129,7 +122,7 @@ export default function TabTransactions() {
       const lowercaseQuery = query.toLowerCase();
       filtered = filtered.filter(t => 
         t.title.toLowerCase().includes(lowercaseQuery) || 
-        t.category.toLowerCase().includes(lowercaseQuery)
+        (t.category as CategoryType).toLowerCase().includes(lowercaseQuery)
       );
     }
     
@@ -148,8 +141,12 @@ export default function TabTransactions() {
       params: { id: transaction.id }
     });
   };
-  
-  console.log(auth.currentUser?.email);
+  useEffect(() => {
+    fetchUserData().then((userData) => {
+      setUserData(userData);
+      setTransactions(userData?.transactions || []);
+    });
+  }, []);
   
   return (
     <View style={styles.container}>
