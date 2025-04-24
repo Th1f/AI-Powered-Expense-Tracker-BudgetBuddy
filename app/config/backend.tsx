@@ -1,3 +1,4 @@
+import { UserData } from "../types";
 import {auth} from "./firebase";
 const BACKEND_URL ="http://127.0.0.1:5000";
 
@@ -43,7 +44,7 @@ export const createUser = async (username: String) =>{
   }
 }
 
-export const getUser = async () => {
+export const fetchUserData = async ():Promise<UserData | null>=> {
   try {
     const user = auth.currentUser;
     if (!user) {
@@ -65,30 +66,6 @@ export const getUser = async () => {
     return data;
   } catch (error) {
     console.log(error);
-  }
-}
-
-export const fetchUserData = async () => {
-  try {
-    const user = auth.currentUser;
-    if (!user) {
-      throw new Error('User is not authenticated');
-    }
-    console.log(user);
-
-    const token = await user.getIdToken();
-
-    const response = await fetch(`${BACKEND_URL}/api/auth/user`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-    });
-    const data = await response.json();
-    console.log(data);
-    return data;
-  } catch (error) {
-    console.log(error);
+    return null
   }
 }

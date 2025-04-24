@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   View, 
   Text, 
@@ -17,7 +17,9 @@ import BudgetCard from '../../components/BudgetCard';
 import TransactionItem from '../../components/TransactionItem';
 import InsightCard from '../../components/InsightCard';
 import AddExpenseFAB from '../../components/AddExpenseFAB';
-import { getUser } from '../config/backend';
+import { fetchUserData } from '../config/backend';
+import { auth } from '../config/firebase';
+import { UserData } from '../types';
 
 // Mock data for demonstration
 const mockCategories = [
@@ -94,16 +96,25 @@ export default function Dashboard() {
   };
 
   const handleSettings = () => {
-    getUser();
   };
+
+  useEffect(() => {
+    fetchUserData().then((userData) => {
+      setUser(userData);
+    });
+  }, []);
+  const month = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const [user, setUser] = useState<UserData | null>(null);
+
+  console.log(user);
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
       <View style={styles.header}>
         <View>
-          <Text style={styles.greeting}>Hello, Alex</Text>
-          <Text style={styles.date}>April 3, 2025</Text>
+          <Text style={styles.greeting}>Hello, {user?.name}</Text>
+          <Text style={styles.date}>{new Date().getDay()} {month[new Date().getMonth()]} {new Date().getFullYear()}</Text>
         </View>
         <View style={styles.headerButtons}>
           <TouchableOpacity style={styles.iconButton} onPress={handleLogin}>
@@ -124,14 +135,14 @@ export default function Dashboard() {
             </View>
           </View>
           <View style={styles.budgetAmount}>
-            <Text style={styles.spentAmount}>${totalSpent}</Text>
-            <Text style={styles.totalAmount}>/${totalBudget}</Text>
+            <Text style={styles.spentAmount}>${(user?.used_budget ?? 0)}</Text>
+            <Text style={styles.totalAmount}>/${(user?.budget ?? 0)}</Text>
           </View>
           <View style={styles.progressBarContainer}>
             <View 
               style={[
                 styles.progressBar, 
-                { width: `${(totalSpent / totalBudget) * 100}%` }
+                { width: `${(user?.used_budget ?? 0) / (user?.budget ?? 1) * 100}%` }
               ]} 
             />
           </View>
@@ -139,12 +150,12 @@ export default function Dashboard() {
             <View style={styles.budgetStat}>
               <View style={[styles.statIndicator, { backgroundColor: Colors.primary }]} />
               <Text style={styles.statLabel}>Spent</Text>
-              <Text style={styles.statValue}>${totalSpent}</Text>
+              <Text style={styles.statValue}>${(user?.used_budget ?? 0)}</Text>
             </View>
             <View style={styles.budgetStat}>
               <View style={[styles.statIndicator, { backgroundColor: Colors.border }]} />
               <Text style={styles.statLabel}>Remaining</Text>
-              <Text style={styles.statValue}>${totalBudget - totalSpent}</Text>
+              <Text style={styles.statValue}>${(user?.budget ?? 0) - (user?.used_budget ?? 0)}</Text>
             </View>
           </View>
         </View>

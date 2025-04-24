@@ -4,6 +4,7 @@ import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 import { Colors, FontSize, Spacing, BorderRadius, Shadow } from '@/constants/Theme';
+import { auth } from '../config/firebase';
 
 // Type definitions
 interface Budget {
@@ -145,6 +146,8 @@ export default function BudgetsTab() {
       pathname: "/transactions",
     });
   };
+  
+  console.log(auth.currentUser?.email);
   
   return (
     <View style={styles.container}>

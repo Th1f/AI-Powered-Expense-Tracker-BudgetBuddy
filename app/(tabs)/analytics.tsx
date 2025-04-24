@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import InsightCard from '../../components/InsightCard';
 import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../../constants/Theme';
+import { auth } from '../config/firebase';
 
 // Mock data for demonstration purposes
 const mockInsights = [
@@ -73,6 +74,8 @@ export default function Analytics() {
   const dismissInsight = (id: string) => {
     setInsights(insights.filter(insight => insight.id !== id));
   };
+
+  console.log(auth.currentUser?.email);
 
   // Helper function to render the bar chart (simplified)
   const renderBarChart = () => {

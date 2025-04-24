@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import TransactionItem from '@/components/TransactionItem';
 import { Colors, FontSize, Spacing, BorderRadius, Shadow } from '@/constants/Theme';
+import { auth } from '../config/firebase';
 
 // Type definitions
 interface Transaction {
@@ -139,6 +140,8 @@ export default function TabTransactions() {
       params: { id: transaction.id }
     });
   };
+  
+  console.log(auth.currentUser?.email);
   
   return (
     <View style={styles.container}>
