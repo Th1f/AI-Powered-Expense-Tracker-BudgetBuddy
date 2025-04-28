@@ -4,7 +4,7 @@ export interface Transaction {
   title: string;
   amount: number;
   category: CategoryType;
-  date: Date;
+  date: string;
   isExpense: boolean;
 }
 

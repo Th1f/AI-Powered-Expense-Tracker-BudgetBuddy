@@ -101,7 +101,7 @@ export default function ManualExpenseScreen() {
       title: description,
       amount: parseFloat(amount),
       category: selectedCategory.id,
-      date: date,
+      date: date.toISOString(),
       isExpense: true
     };
 

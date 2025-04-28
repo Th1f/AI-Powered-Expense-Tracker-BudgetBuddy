@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { fetchUserData } from '../config/backend';
+import { fetchUserData, fetchUserTransactions } from '../config/backend';
 import TransactionItem from '@/components/TransactionItem';
 import { Colors, FontSize, Spacing, BorderRadius, Shadow } from '@/constants/Theme';
 import { auth } from '../config/firebase';
@@ -26,25 +26,19 @@ interface TransactionGroup {
   data: Transaction[];
 }
 
-// Mock data for demonstration purposes
-const mockTransactions: Transaction[] = [
-  { id: '1', title: 'Grocery Store', amount: 45.67, category: 'food', date: new Date(2025, 3, 2), isExpense: true },
-  { id: '2', title: 'Uber Ride', amount: 12.50, category: 'transport', date: new Date(2025, 3, 1), isExpense: true },
-  { id: '3', title: 'Movie Tickets', amount: 24.00, category: 'entertainment', date: new Date(2025, 3, 1), isExpense: true },
-  { id: '4', title: 'Salary Deposit', amount: 2500.00, category: 'other', date: new Date(2025, 2, 28), isExpense: false },
-  { id: '5', title: 'Rent Payment', amount: 1200.00, category: 'housing', date: new Date(2025, 2, 27), isExpense: true },
-  { id: '6', title: 'Pharmacy', amount: 32.40, category: 'health', date: new Date(2025, 2, 25), isExpense: true },
-  { id: '7', title: 'Online Shopping', amount: 78.50, category: 'shopping', date: new Date(2025, 2, 23), isExpense: true },
-];
-
 // Helper function to group transactions by date
 const groupTransactionsByDate = (transactions: Transaction[]): TransactionGroup[] => {
+  if (!transactions || transactions.length === 0) {
+    return [];
+  }
+  
   const groups: Record<string, Transaction[]> = {};
   
   transactions.forEach(transaction => {
-    console.log(transaction);
-    const date = transaction.date;
-    const dateKey = date.toISOString().split('T')[0];
+    if (!transaction.date) return;
+    
+    // Handle string date format
+    const dateKey = transaction.date.split('T')[0];
     
     if (!groups[dateKey]) {
       groups[dateKey] = [];
@@ -56,7 +50,7 @@ const groupTransactionsByDate = (transactions: Transaction[]): TransactionGroup[
   return Object.entries(groups)
     .map(([dateString, transactions]) => ({
       title: formatDateHeader(new Date(dateString)),
-      data: transactions.sort((a, b) => b.date.getTime() - a.date.getTime()),
+      data: transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
     }))
     .sort((a, b) => {
       const dateA = new Date(a.data[0].date).getTime();
@@ -67,22 +61,33 @@ const groupTransactionsByDate = (transactions: Transaction[]): TransactionGroup[
 
 // Format date for section headers
 const formatDateHeader = (date: Date): string => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  
-  const dateOnly = new Date(date);
-  dateOnly.setHours(0, 0, 0, 0);
-  
-  if (dateOnly.getTime() === today.getTime()) {
-    return 'Today';
-  } else if (dateOnly.getTime() === yesterday.getTime()) {
-    return 'Yesterday';
-  } else {
-    // Format as Month Day, Year (e.g., April 1, 2025)
-    return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  try {
+    if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+      // Handle invalid date by returning a fallback format
+      return 'Unknown Date';
+    }
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    const dateOnly = new Date(date);
+    dateOnly.setHours(0, 0, 0, 0);
+    
+    if (dateOnly.getTime() === today.getTime()) {
+      return 'Today';
+    } else if (dateOnly.getTime() === yesterday.getTime()) {
+      return 'Yesterday';
+    } else {
+      // Format as Month Day, Year (e.g., April 1, 2025)
+      const options = { month: 'long', day: 'numeric', year: 'numeric' } as Intl.DateTimeFormatOptions;
+      return dateOnly.toLocaleDateString('en-US', options);
+    }
+  } catch (error) {
+    console.error('Error formatting date header:', error);
+    return 'Date Error';
   }
 };
 
@@ -101,15 +106,23 @@ export default function TabTransactions() {
     { id: 'expense', label: 'Expenses', icon: 'arrow-down' },
     { id: 'income', label: 'Income', icon: 'arrow-up' },
   ];
-  
+
   useEffect(() => {
+    fetchUserTransactions().then((data) => {
+      console.log(data);
+      if (data) {
+        setTransactions(data);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    console.log("Filtering effect running with", transactions.length, "transactions");
     filterTransactions(activeFilter, searchQuery);
-  }, [searchQuery, activeFilter]);
-  
+  }, [searchQuery, activeFilter, transactions]);
+
   const filterTransactions = (filterId: string, query: string) => {
     let filtered = [...transactions];
-    console.log("Filtered")
-    console.log(transactions)
     // Apply type filter
     if (filterId === 'expense') {
       filtered = filtered.filter(t => t.isExpense);
@@ -141,12 +154,7 @@ export default function TabTransactions() {
       params: { id: transaction.id }
     });
   };
-  useEffect(() => {
-    fetchUserData().then((userData) => {
-      setUserData(userData);
-      setTransactions(userData?.transactions || []);
-    });
-  }, []);
+ 
   
   return (
     <View style={styles.container}>

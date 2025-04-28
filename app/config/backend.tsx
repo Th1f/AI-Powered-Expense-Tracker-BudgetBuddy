@@ -2,6 +2,11 @@ import { UserData, Transaction } from "../types";
 import {auth} from "./firebase";
 const BACKEND_URL ="http://127.0.0.1:5000";
 
+interface TransactionData{
+  transactions: Transaction[];
+  error: boolean;
+}
+
 export const testAuth = async () => {
   try {
     const user = await auth.currentUser;
@@ -62,8 +67,30 @@ export const fetchUserData = async ():Promise<UserData | null>=> {
       },
     });
     const data = await response.json();
-    console.log(data);
     return data;
+  } catch (error) {
+    console.log(error);
+    return null
+  }
+}
+
+export const fetchUserTransactions = async ():Promise<Transaction[] | null> => {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('User is not authenticated');
+    }
+    const token = await user.getIdToken();
+
+    const response = await fetch(`${BACKEND_URL}/api/auth/user/transactions`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+    });
+    const data:TransactionData = await response.json();
+    return data.transactions;
   } catch (error) {
     console.log(error);
     return null
