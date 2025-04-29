@@ -27,12 +27,10 @@ export default function Login() {
     setIsLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      console.log("Login successful");
-      console.log(auth.currentUser);
+      setIsLoading(false);
       router.replace('/(tabs)');
     } catch (error) {
       console.log(error);
-    } finally {
       setIsLoading(false);
     }
   };

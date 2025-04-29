@@ -105,9 +105,6 @@ export default function Dashboard() {
       setTransactions(userData?.transactions ?? []);
     });
   }, []);
-  const month = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-  const [user, setUser] = useState<UserData | null>(null);
-  console.log(user);
 
   const calculateUsedBudget = () => {
     const usedBudget = transactions.reduce((total, transaction) => {
@@ -115,7 +112,10 @@ export default function Dashboard() {
     }, 0);
     return usedBudget;
   };
-
+  const month = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const [user, setUser] = useState<UserData | null>(null);
+  console.log(user);
+  const usedBudget = calculateUsedBudget();
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
@@ -143,14 +143,14 @@ export default function Dashboard() {
             </View>
           </View>
           <View style={styles.budgetAmount}>
-            <Text style={styles.spentAmount}>${(calculateUsedBudget())}</Text>
+            <Text style={styles.spentAmount}>${(usedBudget)}</Text>
             <Text style={styles.totalAmount}>/${(user?.budget ?? 0)}</Text>
           </View>
           <View style={styles.progressBarContainer}>
             <View 
               style={[
                 styles.progressBar, 
-                { width: `${(calculateUsedBudget()) / (user?.budget ?? 1) * 100}%` }
+                { width: `${(usedBudget) / (user?.budget ?? 1) * 100}%` }
               ]} 
             />
           </View>
@@ -158,12 +158,12 @@ export default function Dashboard() {
             <View style={styles.budgetStat}>
               <View style={[styles.statIndicator, { backgroundColor: Colors.primary }]} />
               <Text style={styles.statLabel}>Spent</Text>
-              <Text style={styles.statValue}>${(calculateUsedBudget())}</Text>
+              <Text style={styles.statValue}>${(usedBudget)}</Text>
             </View>
             <View style={styles.budgetStat}>
               <View style={[styles.statIndicator, { backgroundColor: Colors.border }]} />
               <Text style={styles.statLabel}>Remaining</Text>
-              <Text style={styles.statValue}>${(user?.budget ?? 0) - (calculateUsedBudget())}</Text>
+              <Text style={styles.statValue}>${(user?.budget ?? 0) - (usedBudget)}</Text>
             </View>
           </View>
         </View>
