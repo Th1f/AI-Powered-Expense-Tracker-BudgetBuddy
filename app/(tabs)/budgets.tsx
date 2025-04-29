@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 import { Colors, FontSize, Spacing, BorderRadius, Shadow } from '@/constants/Theme';
 import { auth } from '../config/firebase';
+import { fetchUserData, fetchUserTransactions } from '../config/backend';
+import { Transaction, UserData } from '../types';
 
 // Type definitions
 interface Budget {
@@ -137,6 +139,25 @@ export default function BudgetsTab() {
   const [budgets, setBudgets] = useState<Budget[]>(mockBudgets);
   const [activePeriod, setActivePeriod] = useState<'monthly' | 'weekly'>('monthly');
   
+  
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [user, setUser] = useState<UserData | null>(null);
+
+  useEffect(() => {
+    fetchUserData().then((userData) => {
+      setUser(userData);
+      setTransactions(userData?.transactions ?? []);
+    });
+  }, []);
+
+  const calculateUsedBudget = () => {
+    const usedBudget = transactions.reduce((total, transaction) => {
+      return total + (transaction.isExpense ? transaction.amount : 0);
+    }, 0);
+    return usedBudget;
+  };
+  const usedBudget = calculateUsedBudget();
+
   const totalAllocated = budgets.reduce((sum, budget) => sum + budget.allocated, 0);
   const totalSpent = budgets.reduce((sum, budget) => sum + budget.spent, 0);
   const totalRemaining = totalAllocated - totalSpent;
@@ -195,12 +216,12 @@ export default function BudgetsTab() {
         
         <View style={styles.totalBudgetCard}>
           <Text style={styles.totalBudgetTitle}>Total Budget</Text>
-          <Text style={styles.totalBudgetAmount}>${totalAllocated.toFixed(2)}</Text>
+          <Text style={styles.totalBudgetAmount}>${(user?.budget ?? 0)}</Text>
           
           <View style={styles.totalBudgetDetails}>
             <View style={styles.totalBudgetDetail}>
               <Text style={styles.totalBudgetDetailLabel}>Spent</Text>
-              <Text style={styles.totalBudgetDetailValue}>${totalSpent.toFixed(2)}</Text>
+              <Text style={styles.totalBudgetDetailValue}>${(usedBudget)}</Text>
             </View>
             <View style={styles.totalBudgetDivider} />
             <View style={styles.totalBudgetDetail}>
@@ -209,7 +230,7 @@ export default function BudgetsTab() {
                 styles.totalBudgetDetailValue,
                 totalRemaining < 0 && styles.totalBudgetOverspent
               ]}>
-                ${Math.abs(totalRemaining).toFixed(2)}
+                ${(user?.budget ?? 0) - (usedBudget)}
               </Text>
             </View>
           </View>
@@ -219,8 +240,8 @@ export default function BudgetsTab() {
               style={[
                 styles.progressBar, 
                 { 
-                  width: `${Math.min((totalSpent / totalAllocated) * 100, 100)}%`,
-                  backgroundColor: totalSpent > totalAllocated ? Colors.danger : Colors.primary
+                  width: `${Math.min((usedBudget / (user?.budget ?? 0)) * 100, 100)}%`,
+                  backgroundColor: usedBudget > (user?.budget ?? 0) ? Colors.danger : Colors.primary
                 }
               ]} 
             />
@@ -237,7 +258,7 @@ export default function BudgetsTab() {
       </View>
       
       <ScrollView style={styles.budgetsList}>
-        {budgets.map((budget) => (
+        {mockBudgets.map((budget) => (
           <BudgetCard 
             key={budget.id} 
             budget={budget} 

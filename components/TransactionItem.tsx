@@ -9,7 +9,7 @@ interface TransactionItemProps {
   amount: number;
   category: CategoryType;
   title: string;
-  date: Date;
+  date: Date | string;
   isExpense?: boolean;
   onPress?: () => void;
 }
@@ -56,11 +56,25 @@ const getCategoryColor = (category: CategoryType): string => {
   }
 };
 
-const formatDate = (date: Date): string => {
-  return date.toLocaleDateString('en-US', { 
-    month: 'short', 
-    day: 'numeric'
-  });
+const formatDate = (date: string | Date): string => {
+  try {
+    // Handle string date by converting to Date object
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    
+    // Make sure it's a valid date
+    if (!(dateObj instanceof Date) || isNaN(dateObj.getTime())) {
+      return 'Invalid date';
+    }
+    
+    // Format the date
+    return dateObj.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric'
+    });
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return 'Date error';
+  }
 };
 
 const TransactionItem: React.FC<TransactionItemProps> = ({

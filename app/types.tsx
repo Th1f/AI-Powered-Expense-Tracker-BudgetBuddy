@@ -1,18 +1,19 @@
+export type CategoryType = 'food' | 'transport' | 'shopping' | 'entertainment' | 'housing' | 'health' | 'other';
 export interface Transaction {
   id: string;
   title: string;
   amount: number;
-  category: 'food' | 'transport' | 'shopping' | 'entertainment' | 'health' | 'housing' | 'income' | 'other';
-  date: Date;
+  category: CategoryType;
+  date: string;
   isExpense: boolean;
 }
 
 export interface UserData {
-    email: string;
-    name: string;
-    userId: string;
-    budget: number;
-    used_budget: number;
-    error: boolean;
-    transactions: Transaction[];
+  email: string;
+  name: string;
+  userId: string;
+  budget: number;
+  used_budget: number;
+  error: boolean;
+  transactions: Transaction[];
 }

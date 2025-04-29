@@ -19,7 +19,7 @@ import InsightCard from '../../components/InsightCard';
 import AddExpenseFAB from '../../components/AddExpenseFAB';
 import { fetchUserData } from '../config/backend';
 import { auth } from '../config/firebase';
-import { UserData } from '../types';
+import { Transaction, UserData } from '../types';
 
 // Mock data for demonstration
 const mockCategories = [
@@ -63,6 +63,7 @@ export default function Dashboard() {
   const totalBudget = 2000;
   const totalSpent = 1250;
   const [insights, setInsights] = useState(mockInsights);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const dismissInsight = (id: string) => {
     setInsights(insights.filter(insight => insight.id !== id));
   };
@@ -101,13 +102,20 @@ export default function Dashboard() {
   useEffect(() => {
     fetchUserData().then((userData) => {
       setUser(userData);
+      setTransactions(userData?.transactions ?? []);
     });
   }, []);
+
+  const calculateUsedBudget = () => {
+    const usedBudget = transactions.reduce((total, transaction) => {
+      return total + (transaction.isExpense ? transaction.amount : 0);
+    }, 0);
+    return usedBudget;
+  };
   const month = ["January","February","March","April","May","June","July","August","September","October","November","December"];
   const [user, setUser] = useState<UserData | null>(null);
-
   console.log(user);
-
+  const usedBudget = calculateUsedBudget();
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
@@ -135,14 +143,14 @@ export default function Dashboard() {
             </View>
           </View>
           <View style={styles.budgetAmount}>
-            <Text style={styles.spentAmount}>${(user?.used_budget ?? 0)}</Text>
+            <Text style={styles.spentAmount}>${(usedBudget)}</Text>
             <Text style={styles.totalAmount}>/${(user?.budget ?? 0)}</Text>
           </View>
           <View style={styles.progressBarContainer}>
             <View 
               style={[
                 styles.progressBar, 
-                { width: `${(user?.used_budget ?? 0) / (user?.budget ?? 1) * 100}%` }
+                { width: `${(usedBudget) / (user?.budget ?? 1) * 100}%` }
               ]} 
             />
           </View>
@@ -150,12 +158,12 @@ export default function Dashboard() {
             <View style={styles.budgetStat}>
               <View style={[styles.statIndicator, { backgroundColor: Colors.primary }]} />
               <Text style={styles.statLabel}>Spent</Text>
-              <Text style={styles.statValue}>${(user?.used_budget ?? 0)}</Text>
+              <Text style={styles.statValue}>${(usedBudget)}</Text>
             </View>
             <View style={styles.budgetStat}>
               <View style={[styles.statIndicator, { backgroundColor: Colors.border }]} />
               <Text style={styles.statLabel}>Remaining</Text>
-              <Text style={styles.statValue}>${(user?.budget ?? 0) - (user?.used_budget ?? 0)}</Text>
+              <Text style={styles.statValue}>${(user?.budget ?? 0) - (usedBudget)}</Text>
             </View>
           </View>
         </View>
@@ -215,7 +223,7 @@ export default function Dashboard() {
               <Text style={styles.seeAllText}>See All</Text>
             </TouchableOpacity>
           </View>
-          {mockTransactions.map((transaction) => (
+          {transactions.map((transaction) => (
             <TransactionItem
               key={transaction.id}
               amount={transaction.amount}
