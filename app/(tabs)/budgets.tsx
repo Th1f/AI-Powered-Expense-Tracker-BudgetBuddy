@@ -1,23 +1,26 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  ScrollView, 
+  TouchableOpacity, 
+  Dimensions,
+  Modal,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform
+} from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 import { Colors, FontSize, Spacing, BorderRadius, Shadow } from '@/constants/Theme';
 import { auth } from '../config/firebase';
-import { fetchUserData, fetchUserTransactions } from '../config/backend';
+import { addCategory, fetchUserData, fetchUserTransactions } from '../config/backend';
 import { Transaction, UserData } from '../types';
 
 // Type definitions
-interface Budget {
-  id: string;
-  category: string;
-  allocated: number;
-  spent: number;
-  remaining: number;
-  period: 'monthly' | 'weekly';
-  color: string;
-}
+import { Budget } from '../types';
 
 // Mock data for demonstration purposes
 const mockBudgets: Budget[] = [
@@ -136,17 +139,23 @@ const BudgetCard = ({ budget, onPress }: { budget: Budget, onPress: () => void }
 
 export default function BudgetsTab() {
   const router = useRouter();
-  const [budgets, setBudgets] = useState<Budget[]>(mockBudgets);
+  const [budgets, setBudgets] = useState<Budget[]>([]);
   const [activePeriod, setActivePeriod] = useState<'monthly' | 'weekly'>('monthly');
   
+  // Modal state
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryBudget, setNewCategoryBudget] = useState('');
   
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [user, setUser] = useState<UserData | null>(null);
 
   useEffect(() => {
     fetchUserData().then((userData) => {
+      console.log(userData);
       setUser(userData);
       setTransactions(userData?.transactions ?? []);
+      setBudgets(userData?.custom_categories ?? []);
     });
   }, []);
 
@@ -157,7 +166,7 @@ export default function BudgetsTab() {
     return usedBudget;
   };
   const usedBudget = calculateUsedBudget();
-
+  console.log(budgets);
   const totalAllocated = budgets.reduce((sum, budget) => sum + budget.allocated, 0);
   const totalSpent = budgets.reduce((sum, budget) => sum + budget.spent, 0);
   const totalRemaining = totalAllocated - totalSpent;
@@ -166,6 +175,54 @@ export default function BudgetsTab() {
     router.push({
       pathname: "/transactions",
     });
+  };
+  
+  const toggleModal = () => {
+    setIsModalVisible(!isModalVisible);
+    // Reset form fields when closing
+    if (isModalVisible) {
+      setNewCategoryName('');
+      setNewCategoryBudget('');
+    }
+  };
+  
+  const handleAddCategory = () => {
+    // Validate inputs
+    if (!newCategoryName.trim() || !newCategoryBudget.trim()) {
+      // Add error handling here if needed
+      return;
+    }
+    
+    const budget = parseFloat(newCategoryBudget);
+    if (isNaN(budget) || budget <= 0) {
+      // Add error handling for invalid budget
+      return;
+    }
+    
+    // Create new category (currently just for UI, not connected to backend)
+    const newCategory: Budget = {
+      id: (budgets.length + 1).toString(),
+      category: newCategoryName,
+      allocated: budget,
+      spent: 0,
+      remaining: budget,
+      period: activePeriod,
+      color: getRandomColor() // Function to generate random color
+    };
+
+    addCategory(newCategory);
+    
+    // Add to state
+    setBudgets([...budgets, newCategory]);
+    
+    // Close modal
+    toggleModal();
+  };
+  
+  // Helper function to generate random colors for new categories
+  const getRandomColor = () => {
+    const colors = ['#4CAF50', '#2196F3', '#9C27B0', '#FF9800', '#F44336', '#00BCD4', '#3F51B5', '#FF5722'];
+    return colors[Math.floor(Math.random() * colors.length)];
   };
   
   console.log(auth.currentUser?.email);
@@ -251,14 +308,14 @@ export default function BudgetsTab() {
       
       <View style={styles.budgetsHeaderContainer}>
         <Text style={styles.budgetsHeader}>Budget Categories</Text>
-        <TouchableOpacity style={styles.addBudgetButton}>
+        <TouchableOpacity style={styles.addBudgetButton} onPress={toggleModal}>
           <Ionicons name="add-circle" size={24} color={Colors.primary} />
           <Text style={styles.addBudgetText}>Add</Text>
         </TouchableOpacity>
       </View>
       
       <ScrollView style={styles.budgetsList}>
-        {mockBudgets.map((budget) => (
+        {budgets.map((budget: Budget) => (
           <BudgetCard 
             key={budget.id} 
             budget={budget} 
@@ -266,6 +323,91 @@ export default function BudgetsTab() {
           />
         ))}
       </ScrollView>
+      
+      {/* Add Budget Category Modal */}
+      <Modal
+        visible={isModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={toggleModal}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalContainer}
+        >
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Add Budget Category</Text>
+              <TouchableOpacity onPress={toggleModal} style={styles.closeButton}>
+                <Ionicons name="close" size={24} color={Colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.formGroup}>
+              <Text style={styles.inputLabel}>Category Name</Text>
+              <View style={styles.inputContainer}>
+                <Ionicons name="pricetag-outline" size={20} color={Colors.textSecondary} style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="e.g., Food & Dining, Transportation"
+                  placeholderTextColor={Colors.textSecondary}
+                  value={newCategoryName}
+                  onChangeText={setNewCategoryName}
+                />
+              </View>
+            </View>
+            
+            <View style={styles.formGroup}>
+              <Text style={styles.inputLabel}>Budget Amount</Text>
+              <View style={styles.inputContainer}>
+                <Ionicons name="cash-outline" size={20} color={Colors.textSecondary} style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="e.g., 500"
+                  placeholderTextColor={Colors.textSecondary}
+                  value={newCategoryBudget}
+                  onChangeText={setNewCategoryBudget}
+                  keyboardType="numeric"
+                />
+              </View>
+            </View>
+            
+            <View style={styles.periodSelectorContainer}>
+              <Text style={styles.inputLabel}>Budget Period</Text>
+              <View style={styles.periodToggleModal}>
+                <TouchableOpacity
+                  style={[
+                    styles.periodButtonModal,
+                    activePeriod === 'monthly' && styles.activePeriodButtonModal
+                  ]}
+                  onPress={() => setActivePeriod('monthly')}
+                >
+                  <Text style={[
+                    styles.periodButtonTextModal,
+                    activePeriod === 'monthly' && styles.activePeriodButtonTextModal
+                  ]}>Monthly</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.periodButtonModal,
+                    activePeriod === 'weekly' && styles.activePeriodButtonModal
+                  ]}
+                  onPress={() => setActivePeriod('weekly')}
+                >
+                  <Text style={[
+                    styles.periodButtonTextModal,
+                    activePeriod === 'weekly' && styles.activePeriodButtonTextModal
+                  ]}>Weekly</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+            
+            <TouchableOpacity style={styles.addButton} onPress={handleAddCategory}>
+              <Text style={styles.addButtonText}>Add Category</Text>
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
 }
@@ -438,5 +580,98 @@ const styles = StyleSheet.create({
   },
   budgetOverspent: {
     color: Colors.danger,
+  },
+  // Modal styles
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    backgroundColor: Colors.background,
+    borderTopLeftRadius: BorderRadius.l,
+    borderTopRightRadius: BorderRadius.l,
+    padding: Spacing.l,
+    maxHeight: '80%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.l,
+  },
+  modalTitle: {
+    fontSize: FontSize.l,
+    fontWeight: 'bold',
+    color: Colors.textPrimary,
+  },
+  closeButton: {
+    padding: Spacing.xs,
+  },
+  formGroup: {
+    marginBottom: Spacing.m,
+  },
+  inputLabel: {
+    fontSize: FontSize.s,
+    color: Colors.textSecondary,
+    marginBottom: Spacing.xs,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.cardBackground,
+    borderRadius: BorderRadius.m,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    overflow: 'hidden',
+  },
+  inputIcon: {
+    padding: Spacing.m,
+  },
+  input: {
+    flex: 1,
+    height: 50,
+    paddingHorizontal: Spacing.s,
+    fontSize: FontSize.m,
+    color: Colors.textPrimary,
+  },
+  periodSelectorContainer: {
+    marginBottom: Spacing.l,
+  },
+  periodToggleModal: {
+    flexDirection: 'row',
+    backgroundColor: Colors.cardBackground,
+    borderRadius: BorderRadius.m,
+    padding: Spacing.xs,
+    ...Shadow.small,
+  },
+  periodButtonModal: {
+    flex: 1,
+    paddingVertical: Spacing.s,
+    alignItems: 'center',
+    borderRadius: BorderRadius.s,
+  },
+  activePeriodButtonModal: {
+    backgroundColor: Colors.primary,
+  },
+  periodButtonTextModal: {
+    fontSize: FontSize.s,
+    color: Colors.textPrimary,
+  },
+  activePeriodButtonTextModal: {
+    color: Colors.cardBackground,
+    fontWeight: '600',
+  },
+  addButton: {
+    backgroundColor: Colors.primary,
+    borderRadius: BorderRadius.m,
+    padding: Spacing.m,
+    alignItems: 'center',
+    ...Shadow.small,
+  },
+  addButtonText: {
+    color: Colors.cardBackground,
+    fontSize: FontSize.m,
+    fontWeight: 'bold',
   },
 });

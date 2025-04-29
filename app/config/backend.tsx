@@ -1,4 +1,4 @@
-import { UserData, Transaction } from "../types";
+import { UserData, Transaction, Budget } from "../types";
 import {auth} from "./firebase";
 const BACKEND_URL ="http://127.0.0.1:5000";
 
@@ -114,6 +114,32 @@ export const addExpense = async (expense: Transaction ) => {
         Authorization: `Bearer ${token}`
       },
       body: JSON.stringify(expense),
+    });
+    const data = await response.json();
+    console.log(data);
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const addCategory = async (newCategory: Budget) => {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('User is not authenticated');
+    }
+    console.log(user);
+
+    const token = await user.getIdToken();
+
+    const response = await fetch(`${BACKEND_URL}/api/auth/user/addcategory`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(newCategory),
     });
     const data = await response.json();
     console.log(data);
