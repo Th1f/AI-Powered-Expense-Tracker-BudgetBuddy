@@ -233,7 +233,7 @@ export default function Dashboard() {
               <TransactionItem
                 key={transaction.id}
                 amount={transaction.amount}
-                category={transaction.category as any}
+                category={transaction.category.toLocaleLowerCase() as any}
                 title={transaction.title}
                 date={transaction.date}
                 isExpense={true}

@@ -240,7 +240,7 @@ export default function TabTransactions() {
                   key={transaction.id}
                   title={transaction.title}
                   amount={transaction.amount}
-                  category={transaction.category}
+                  category={transaction.category.toLocaleLowerCase()}
                   date={transaction.date}
                   isExpense={transaction.isExpense}
                   onPress={() => handleTransactionPress(transaction)}

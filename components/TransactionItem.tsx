@@ -24,7 +24,7 @@ const getCategoryIcon = (category: string): string => {
     case 'entertainment':
       return 'film';
     case 'health':
-      return 'fitness';
+      return 'medkit';
     case 'housing':
       return 'home';
     case 'income':
