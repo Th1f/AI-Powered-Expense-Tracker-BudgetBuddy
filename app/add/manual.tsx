@@ -16,44 +16,34 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Haptics from 'expo-haptics';
 import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../../constants/Theme';
 import { fetchUserData,addExpense } from '../config/backend';
-import { Transaction, UserData } from '../types';
+import { Transaction, UserData, Category } from '../types';
 
 // Define category type
-type CategoryType = 'food' | 'transport' | 'shopping' | 'entertainment' | 'housing' | 'health' | 'other';
 
 // Define category interface
-interface Category {
-  id: CategoryType;
-  name: string;
-  icon: string;
-  color: string;
-}
 
-const categories: Category[] = [
-  { id: 'food', name: 'Food', icon: 'restaurant', color: '#F97316' },
-  { id: 'transport', name: 'Transport', icon: 'car', color: '#8B5CF6' },
-  { id: 'shopping', name: 'Shopping', icon: 'bag-handle', color: '#EC4899' },
-  { id: 'entertainment', name: 'Entertainment', icon: 'film', color: '#06B6D4' },
-  { id: 'housing', name: 'Housing', icon: 'home', color: '#10B981' },
-  { id: 'health', name: 'Health', icon: 'medkit', color: '#EF4444' },
-  { id: 'other', name: 'Other', icon: 'ellipsis-horizontal', color: '#6B7280' },
-];
 
 export default function ManualExpenseScreen() {
   const router = useRouter();
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<Category>(categories[0]);
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [user, setUser] = useState<UserData | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<Category>(categories[0]);
+ 
   
   useEffect(() => {
     fetchUserData().then((userData) => {
       setUser(userData);
+      setCategories(userData?.custom_categories || []);
+      setSelectedCategory(userData?.custom_categories[0] || categories[0]);
     });
   }, []);
+
+  
   
   // Animation values
   const saveButtonAnim = useRef(new Animated.Value(1)).current;
@@ -100,7 +90,7 @@ export default function ManualExpenseScreen() {
       id: (user?.transactions?.length ? user.transactions.length + 1 : 1).toString(),
       title: description,
       amount: parseFloat(amount),
-      category: selectedCategory.id,
+      category: selectedCategory.category,
       date: date.toISOString(),
       isExpense: true
     };
@@ -204,7 +194,7 @@ export default function ManualExpenseScreen() {
                       selectedCategory.id === category.id && styles.selectedCategoryLabel
                     ]}
                   >
-                    {category.name}
+                    {category.category}
                   </Text>
                 </TouchableOpacity>
               ))}

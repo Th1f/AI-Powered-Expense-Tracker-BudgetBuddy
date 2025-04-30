@@ -3,18 +3,17 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../constants/Theme';
 
-type CategoryType = 'food' | 'transport' | 'shopping' | 'entertainment' | 'health' | 'housing' | 'income' | 'other';
 
 interface TransactionItemProps {
   amount: number;
-  category: CategoryType;
+  category: string;
   title: string;
   date: Date | string;
   isExpense?: boolean;
   onPress?: () => void;
 }
 
-const getCategoryIcon = (category: CategoryType): string => {
+const getCategoryIcon = (category: string): string => {
   switch (category) {
     case 'food':
       return 'restaurant';
@@ -25,7 +24,7 @@ const getCategoryIcon = (category: CategoryType): string => {
     case 'entertainment':
       return 'film';
     case 'health':
-      return 'fitness';
+      return 'medkit';
     case 'housing':
       return 'home';
     case 'income':
@@ -35,7 +34,7 @@ const getCategoryIcon = (category: CategoryType): string => {
   }
 };
 
-const getCategoryColor = (category: CategoryType): string => {
+const getCategoryColor = (category: string): string => {
   switch (category) {
     case 'food':
       return '#F97316';

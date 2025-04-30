@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { 
   View, 
   Text, 
@@ -19,15 +20,9 @@ import InsightCard from '../../components/InsightCard';
 import AddExpenseFAB from '../../components/AddExpenseFAB';
 import { fetchUserData } from '../config/backend';
 import { auth } from '../config/firebase';
-import { Transaction, UserData } from '../types';
+import { Category, Transaction, UserData } from '../types';
 
 // Mock data for demonstration
-const mockCategories = [
-  { id: '1', name: 'Food', icon: 'restaurant', color: '#F97316', spent: 320, budget: 400 },
-  { id: '2', name: 'Transport', icon: 'car', color: '#8B5CF6', spent: 150, budget: 200 },
-  { id: '3', name: 'Shopping', icon: 'bag-handle', color: '#EC4899', spent: 210, budget: 300 },
-  { id: '4', name: 'Entertainment', icon: 'film', color: '#06B6D4', spent: 80, budget: 100 },
-];
 
 const mockTransactions = [
   { id: '1', title: 'Grocery Store', amount: 45.67, category: 'food', date: new Date(2025, 3, 2) },
@@ -64,6 +59,7 @@ export default function Dashboard() {
   const totalSpent = 1250;
   const [insights, setInsights] = useState(mockInsights);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [customCategories, setCustomCategories] = useState<Category[]>([]);
   const dismissInsight = (id: string) => {
     setInsights(insights.filter(insight => insight.id !== id));
   };
@@ -99,12 +95,20 @@ export default function Dashboard() {
   const handleSettings = () => {
   };
 
-  useEffect(() => {
-    fetchUserData().then((userData) => {
-      setUser(userData);
-      setTransactions(userData?.transactions ?? []);
-    });
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log('Dashboard screen is focused - refreshing data');
+      fetchUserData().then((userData) => {
+        setUser(userData);
+        setTransactions(userData?.transactions ?? []);
+        setCustomCategories(userData?.custom_categories ?? []);
+      });
+      
+      return () => {
+        // Cleanup function if needed when screen loses focus
+      };
+    }, [])
+  );
 
   const calculateUsedBudget = () => {
     const usedBudget = transactions.reduce((total, transaction) => {
@@ -204,12 +208,12 @@ export default function Dashboard() {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.categoriesContainer}
           >
-            {mockCategories.map((category) => (
+            {customCategories.map((category) => (
               <BudgetCard
                 key={category.id}
-                title={category.name}
+                title={category.category}
                 currentAmount={category.spent}
-                budgetAmount={category.budget}
+                budgetAmount={category.allocated}
                 icon={category.icon}
                 color={category.color}
               />
@@ -223,16 +227,27 @@ export default function Dashboard() {
               <Text style={styles.seeAllText}>See All</Text>
             </TouchableOpacity>
           </View>
-          {transactions.map((transaction) => (
-            <TransactionItem
-              key={transaction.id}
-              amount={transaction.amount}
-              category={transaction.category as any}
-              title={transaction.title}
-              date={transaction.date}
-              isExpense={true}
-            />
-          ))}
+          
+          {transactions.length > 0 ? (
+            transactions.map((transaction) => (
+              <TransactionItem
+                key={transaction.id}
+                amount={transaction.amount}
+                category={transaction.category.toLocaleLowerCase() as any}
+                title={transaction.title}
+                date={transaction.date}
+                isExpense={true}
+              />
+            ))
+          ) : (
+            <View style={styles.emptyTransactionsContainer}>
+              <Ionicons name="receipt-outline" size={48} color={Colors.textSecondary} />
+              <Text style={styles.emptyTransactionsTitle}>No transactions yet</Text>
+              <Text style={styles.emptyTransactionsText}>
+                Start tracking your expenses by adding your first transaction
+              </Text>
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -243,6 +258,30 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  emptyTransactionsContainer: {
+    paddingVertical: Spacing.s,
+    paddingHorizontal: Spacing.s,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.cardBackground,
+    borderRadius: BorderRadius.s,
+    marginTop: Spacing.s,
+    marginHorizontal: Spacing.s,
+    ...Shadow.medium,
+  },
+  emptyTransactionsTitle: {
+    fontWeight: '600',
+    fontSize: FontSize.l,
+    color: Colors.textPrimary,
+    marginTop: Spacing.m,
+    marginBottom: Spacing.m,
+  },
+  emptyTransactionsText: {
+    fontSize: FontSize.s,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: Spacing.xl,
   },
   header: {
     flexDirection: 'row',

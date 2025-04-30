@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { 
   View, 
   Text, 
@@ -15,7 +16,7 @@ import TransactionItem from '@/components/TransactionItem';
 import { Colors, FontSize, Spacing, BorderRadius, Shadow } from '@/constants/Theme';
 import { auth } from '../config/firebase';
 import { UserData } from '../types';
-import { CategoryType } from '../types';
+import { Category } from '../types';
 import { Transaction } from '../types';
 
 // Type definitions
@@ -107,14 +108,21 @@ export default function TabTransactions() {
     { id: 'income', label: 'Income', icon: 'arrow-up' },
   ];
 
-  useEffect(() => {
-    fetchUserTransactions().then((data) => {
-      console.log(data);
-      if (data) {
-        setTransactions(data);
-      }
-    });
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log('Transactions screen is focused - refreshing data');
+      fetchUserTransactions().then((data) => {
+        console.log(data);
+        if (data) {
+          setTransactions(data);
+        }
+      });
+      
+      return () => {
+        // Cleanup function if needed when screen loses focus
+      };
+    }, [])
+  );
 
   useEffect(() => {
     console.log("Filtering effect running with", transactions.length, "transactions");
@@ -135,7 +143,7 @@ export default function TabTransactions() {
       const lowercaseQuery = query.toLowerCase();
       filtered = filtered.filter(t => 
         t.title.toLowerCase().includes(lowercaseQuery) || 
-        (t.category as CategoryType).toLowerCase().includes(lowercaseQuery)
+        (t.category ).toLowerCase().includes(lowercaseQuery)
       );
     }
     
@@ -232,7 +240,7 @@ export default function TabTransactions() {
                   key={transaction.id}
                   title={transaction.title}
                   amount={transaction.amount}
-                  category={transaction.category}
+                  category={transaction.category.toLocaleLowerCase()}
                   date={transaction.date}
                   isExpense={transaction.isExpense}
                   onPress={() => handleTransactionPress(transaction)}
