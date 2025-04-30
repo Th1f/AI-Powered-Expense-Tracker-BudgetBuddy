@@ -1,6 +1,6 @@
 export type CategoryType = 'food' | 'transport' | 'shopping' | 'entertainment' | 'housing' | 'health' | 'other';
 
-export interface Budget {
+export interface Category {
   id: string;
   category: string;
   allocated: number;
@@ -8,6 +8,7 @@ export interface Budget {
   remaining: number;
   period: 'monthly' | 'weekly';
   color: string;
+  icon: string;
 }
 
 export interface Transaction {
@@ -27,5 +28,5 @@ export interface UserData {
   used_budget: number;
   error: boolean;
   transactions: Transaction[];
-  custom_categories: Budget[];
+  custom_categories: Category[];
 }

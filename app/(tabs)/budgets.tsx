@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { 
   View, 
   Text, 
@@ -20,67 +21,12 @@ import { addCategory, fetchUserData, fetchUserTransactions } from '../config/bac
 import { Transaction, UserData } from '../types';
 
 // Type definitions
-import { Budget } from '../types';
+import { Category } from '../types';
 
 // Mock data for demonstration purposes
-const mockBudgets: Budget[] = [
-  { 
-    id: '1', 
-    category: 'Food & Dining', 
-    allocated: 500, 
-    spent: 320, 
-    remaining: 180, 
-    period: 'monthly',
-    color: '#4CAF50' 
-  },
-  { 
-    id: '2', 
-    category: 'Transportation', 
-    allocated: 200, 
-    spent: 150, 
-    remaining: 50, 
-    period: 'monthly',
-    color: '#2196F3' 
-  },
-  { 
-    id: '3', 
-    category: 'Entertainment', 
-    allocated: 150, 
-    spent: 120, 
-    remaining: 30, 
-    period: 'monthly',
-    color: '#9C27B0' 
-  },
-  { 
-    id: '4', 
-    category: 'Shopping', 
-    allocated: 300, 
-    spent: 350, 
-    remaining: -50, 
-    period: 'monthly',
-    color: '#FF9800' 
-  },
-  { 
-    id: '5', 
-    category: 'Health', 
-    allocated: 100, 
-    spent: 45, 
-    remaining: 55, 
-    period: 'monthly',
-    color: '#F44336' 
-  },
-  { 
-    id: '6', 
-    category: 'Utilities', 
-    allocated: 250, 
-    spent: 220, 
-    remaining: 30, 
-    period: 'monthly',
-    color: '#00BCD4' 
-  },
-];
 
-const BudgetCard = ({ budget, onPress }: { budget: Budget, onPress: () => void }) => {
+
+const BudgetCard = ({ budget, onPress }: { budget: Category, onPress: () => void }) => {
   const percentSpent = (budget.spent / budget.allocated) * 100;
   const isOverBudget = budget.spent > budget.allocated;
   
@@ -139,7 +85,7 @@ const BudgetCard = ({ budget, onPress }: { budget: Budget, onPress: () => void }
 
 export default function BudgetsTab() {
   const router = useRouter();
-  const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [budgets, setBudgets] = useState<Category[]>([]);
   const [activePeriod, setActivePeriod] = useState<'monthly' | 'weekly'>('monthly');
   
   // Modal state
@@ -150,14 +96,21 @@ export default function BudgetsTab() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [user, setUser] = useState<UserData | null>(null);
 
-  useEffect(() => {
-    fetchUserData().then((userData) => {
-      console.log(userData);
-      setUser(userData);
-      setTransactions(userData?.transactions ?? []);
-      setBudgets(userData?.custom_categories ?? []);
-    });
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log('Budgets screen is focused - refreshing data');
+      fetchUserData().then((userData) => {
+        console.log(userData);
+        setUser(userData);
+        setTransactions(userData?.transactions ?? []);
+        setBudgets(userData?.custom_categories ?? []);
+      });
+      
+      return () => {
+        // Cleanup function if needed when screen loses focus
+      };
+    }, [])
+  );
 
   const calculateUsedBudget = () => {
     const usedBudget = transactions.reduce((total, transaction) => {
@@ -171,7 +124,7 @@ export default function BudgetsTab() {
   const totalSpent = budgets.reduce((sum, budget) => sum + budget.spent, 0);
   const totalRemaining = totalAllocated - totalSpent;
   
-  const navigateToBudgetDetail = (budget: Budget) => {
+  const navigateToBudgetDetail = (budget: Category) => {
     router.push({
       pathname: "/transactions",
     });
@@ -200,14 +153,15 @@ export default function BudgetsTab() {
     }
     
     // Create new category (currently just for UI, not connected to backend)
-    const newCategory: Budget = {
+    const newCategory: Category = {
       id: (budgets.length + 1).toString(),
       category: newCategoryName,
       allocated: budget,
       spent: 0,
       remaining: budget,
       period: activePeriod,
-      color: getRandomColor() // Function to generate random color
+      color: getRandomColor(),
+      icon: 'ellipsis-horizontal'
     };
 
     addCategory(newCategory);
@@ -315,7 +269,7 @@ export default function BudgetsTab() {
       </View>
       
       <ScrollView style={styles.budgetsList}>
-        {budgets.map((budget: Budget) => (
+        {budgets.map((budget: Category) => (
           <BudgetCard 
             key={budget.id} 
             budget={budget} 

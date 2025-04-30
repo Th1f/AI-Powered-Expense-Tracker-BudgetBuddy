@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { 
   View, 
   Text, 
@@ -107,14 +108,21 @@ export default function TabTransactions() {
     { id: 'income', label: 'Income', icon: 'arrow-up' },
   ];
 
-  useEffect(() => {
-    fetchUserTransactions().then((data) => {
-      console.log(data);
-      if (data) {
-        setTransactions(data);
-      }
-    });
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log('Transactions screen is focused - refreshing data');
+      fetchUserTransactions().then((data) => {
+        console.log(data);
+        if (data) {
+          setTransactions(data);
+        }
+      });
+      
+      return () => {
+        // Cleanup function if needed when screen loses focus
+      };
+    }, [])
+  );
 
   useEffect(() => {
     console.log("Filtering effect running with", transactions.length, "transactions");
