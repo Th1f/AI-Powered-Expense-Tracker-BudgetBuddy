@@ -16,7 +16,7 @@ import TransactionItem from '@/components/TransactionItem';
 import { Colors, FontSize, Spacing, BorderRadius, Shadow } from '@/constants/Theme';
 import { auth } from '../config/firebase';
 import { UserData } from '../types';
-import { CategoryType } from '../types';
+import { Category } from '../types';
 import { Transaction } from '../types';
 
 // Type definitions
@@ -143,7 +143,7 @@ export default function TabTransactions() {
       const lowercaseQuery = query.toLowerCase();
       filtered = filtered.filter(t => 
         t.title.toLowerCase().includes(lowercaseQuery) || 
-        (t.category as CategoryType).toLowerCase().includes(lowercaseQuery)
+        (t.category ).toLowerCase().includes(lowercaseQuery)
       );
     }
     

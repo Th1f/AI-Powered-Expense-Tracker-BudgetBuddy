@@ -1,5 +1,3 @@
-export type CategoryType = 'food' | 'transport' | 'shopping' | 'entertainment' | 'housing' | 'health' | 'other';
-
 export interface Category {
   id: string;
   category: string;
@@ -15,7 +13,7 @@ export interface Transaction {
   id: string;
   title: string;
   amount: number;
-  category: CategoryType;
+  category: string;
   date: string;
   isExpense: boolean;
 }
