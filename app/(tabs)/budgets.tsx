@@ -10,15 +10,18 @@ import {
   Modal,
   TextInput,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  Alert
 } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 
 import { Colors, FontSize, Spacing, BorderRadius, Shadow } from '@/constants/Theme';
 import { auth } from '../config/firebase';
 import { addCategory, fetchUserData, fetchUserTransactions } from '../config/backend';
 import { Transaction, UserData } from '../types';
+import BudgetModal from '@/components/BudgetModal';
 
 // Type definitions
 import { Category } from '../types';
@@ -34,6 +37,7 @@ const BudgetCard = ({ budget, onPress }: { budget: Category, onPress: () => void
     <TouchableOpacity 
       style={styles.budgetCard}
       onPress={onPress}
+      activeOpacity={0.7}
     >
       <View style={styles.budgetCardHeader}>
         <Text style={styles.budgetCategory}>{budget.category}</Text>
@@ -88,10 +92,14 @@ export default function BudgetsTab() {
   const [budgets, setBudgets] = useState<Category[]>([]);
   const [activePeriod, setActivePeriod] = useState<'monthly' | 'weekly'>('monthly');
   
-  // Modal state
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  // New category modal state
+  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryBudget, setNewCategoryBudget] = useState('');
+  
+  // Budget detail modal state
+  const [selectedBudget, setSelectedBudget] = useState<Category | null>(null);
+  const [isBudgetModalVisible, setIsBudgetModalVisible] = useState(false);
   
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [user, setUser] = useState<UserData | null>(null);
@@ -125,17 +133,64 @@ export default function BudgetsTab() {
   const totalRemaining = totalAllocated - totalSpent;
   
   const navigateToBudgetDetail = (budget: Category) => {
-    router.push({
-      pathname: "/transactions",
-    });
+    handleBudgetPress(budget);
   };
   
-  const toggleModal = () => {
-    setIsModalVisible(!isModalVisible);
+  const toggleAddModal = () => {
+    setIsAddModalVisible(!isAddModalVisible);
     // Reset form fields when closing
-    if (isModalVisible) {
+    if (isAddModalVisible) {
       setNewCategoryName('');
       setNewCategoryBudget('');
+    }
+  };
+  
+  const handleBudgetPress = (budget: Category) => {
+    setSelectedBudget(budget);
+    setIsBudgetModalVisible(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+  
+  const handleCloseBudgetModal = () => {
+    setIsBudgetModalVisible(false);
+    setSelectedBudget(null);
+  };
+  
+  const handleUpdateBudget = async (updatedBudget: Category) => {
+    try {
+      // For now just update the local state
+      // In a real implementation, this would call the API
+      const updatedBudgets = budgets.map(b => 
+        b.id === updatedBudget.id ? updatedBudget : b
+      );
+      
+      setBudgets(updatedBudgets);
+      
+      // Recalculate the remaining amount based on the new allocated budget
+      const budget = updatedBudgets.find(b => b.id === updatedBudget.id);
+      if (budget) {
+        budget.remaining = budget.allocated - budget.spent;
+      }
+      
+      Alert.alert('Success', 'Budget updated successfully');
+    } catch (error) {
+      console.error('Error updating budget:', error);
+      Alert.alert('Error', 'Failed to update budget');
+    }
+  };
+  
+  const handleDeleteBudget = async (budgetId: string) => {
+    try {
+      // For now just update the local state
+      // In a real implementation, this would call the API
+      const updatedBudgets = budgets.filter(b => b.id !== budgetId);
+      
+      setBudgets(updatedBudgets);
+      
+      Alert.alert('Success', 'Budget deleted successfully');
+    } catch (error) {
+      console.error('Error deleting budget:', error);
+      Alert.alert('Error', 'Failed to delete budget');
     }
   };
   
@@ -170,7 +225,7 @@ export default function BudgetsTab() {
     setBudgets([...budgets, newCategory]);
     
     // Close modal
-    toggleModal();
+    toggleAddModal();
   };
   
   // Helper function to generate random colors for new categories
@@ -262,7 +317,7 @@ export default function BudgetsTab() {
       
       <View style={styles.budgetsHeaderContainer}>
         <Text style={styles.budgetsHeader}>Budget Categories</Text>
-        <TouchableOpacity style={styles.addBudgetButton} onPress={toggleModal}>
+        <TouchableOpacity style={styles.addBudgetButton} onPress={toggleAddModal}>
           <Ionicons name="add-circle" size={24} color={Colors.primary} />
           <Text style={styles.addBudgetText}>Add</Text>
         </TouchableOpacity>
@@ -280,10 +335,10 @@ export default function BudgetsTab() {
       
       {/* Add Budget Category Modal */}
       <Modal
-        visible={isModalVisible}
-        transparent={true}
+        visible={isAddModalVisible}
         animationType="slide"
-        onRequestClose={toggleModal}
+        transparent={true}
+        onRequestClose={toggleAddModal}
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -292,7 +347,7 @@ export default function BudgetsTab() {
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Add Budget Category</Text>
-              <TouchableOpacity onPress={toggleModal} style={styles.closeButton}>
+              <TouchableOpacity style={styles.closeButton} onPress={toggleAddModal}>
                 <Ionicons name="close" size={24} color={Colors.textSecondary} />
               </TouchableOpacity>
             </View>
@@ -362,6 +417,15 @@ export default function BudgetsTab() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
+      
+      {/* Budget Detail Modal */}
+      <BudgetModal
+        visible={isBudgetModalVisible}
+        budget={selectedBudget}
+        onClose={handleCloseBudgetModal}
+        onUpdate={handleUpdateBudget}
+        onDelete={handleDeleteBudget}
+      />
     </View>
   );
 }

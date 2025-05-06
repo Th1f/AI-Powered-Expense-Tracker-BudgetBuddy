@@ -8,16 +8,19 @@ import {
   TextInput, 
   TouchableOpacity,
   SectionList,
+  Alert,
 } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { fetchUserData, fetchUserTransactions } from '../config/backend';
+import { fetchUserData, fetchUserTransactions, addExpense, deleteTransaction, updateTransaction } from '../config/backend';
 import TransactionItem from '@/components/TransactionItem';
+import TransactionModal from '@/components/TransactionModal';
 import { Colors, FontSize, Spacing, BorderRadius, Shadow } from '@/constants/Theme';
 import { auth } from '../config/firebase';
 import { UserData } from '../types';
 import { Category } from '../types';
 import { Transaction } from '../types';
+import * as Haptics from 'expo-haptics';
 
 // Type definitions
 
@@ -99,6 +102,10 @@ export default function TabTransactions() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [userData, setUserData] = useState<UserData | null>(null);
+  
+  // Modal state
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   
   
@@ -118,6 +125,13 @@ export default function TabTransactions() {
         }
       });
       
+      // Also fetch user data to get custom categories
+      fetchUserData().then((data) => {
+        if (data) {
+          setUserData(data);
+        }
+      });
+      
       return () => {
         // Cleanup function if needed when screen loses focus
       };
@@ -131,7 +145,6 @@ export default function TabTransactions() {
 
   const filterTransactions = (filterId: string, query: string) => {
     let filtered = [...transactions];
-    // Apply type filter
     if (filterId === 'expense') {
       filtered = filtered.filter(t => t.isExpense);
     } else if (filterId === 'income') {
@@ -157,10 +170,45 @@ export default function TabTransactions() {
   const groupedTransactions = groupTransactionsByDate(filteredTransactions);
   
   const handleTransactionPress = (transaction: Transaction) => {
-    router.push({
-      pathname: "/transaction/[id]",
-      params: { id: transaction.id }
-    });
+    setSelectedTransaction(transaction);
+    setIsModalVisible(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+  
+  const handleCloseModal = () => {
+    setIsModalVisible(false);
+    setSelectedTransaction(null);
+  };
+  
+  const handleUpdateTransaction = async (updatedTransaction: Transaction) => {
+    try {
+      const updatedTransactions = transactions.map(t => 
+        t.id === updatedTransaction.id ? updatedTransaction : t
+      );
+      
+      setTransactions(updatedTransactions);
+      setIsModalVisible(false);
+      updateTransaction(updatedTransaction);
+      Alert.alert('Success', 'Transaction updated successfully');
+    } catch (error) {
+      console.error('Error updating transaction:', error);
+      Alert.alert('Error', 'Failed to update transaction');
+    }
+  };
+  
+  const handleDeleteTransaction = async (transactionId: string) => {
+    try {
+      const updatedTransactions = transactions.filter(t => t.id !== transactionId);
+      
+      setTransactions(updatedTransactions);
+      setIsModalVisible(false);
+      deleteTransaction(transactionId);
+      
+      Alert.alert('Success', 'Transaction deleted successfully');
+    } catch (error) {
+      console.error('Error deleting transaction:', error);
+      Alert.alert('Error', 'Failed to delete transaction');
+    }
   };
  
   
@@ -255,6 +303,16 @@ export default function TabTransactions() {
           </View>
         )}
       </ScrollView>
+      
+      {/* Transaction Modal */}
+      <TransactionModal
+        visible={isModalVisible}
+        transaction={selectedTransaction}
+        onClose={handleCloseModal}
+        onUpdate={handleUpdateTransaction}
+        onDelete={handleDeleteTransaction}
+        categories={userData?.custom_categories || []}
+      />
     </View>
   );
 }

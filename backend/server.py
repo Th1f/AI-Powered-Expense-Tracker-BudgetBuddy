@@ -11,6 +11,7 @@ from firebase_admin import firestore
 
 # Initialize Flask app
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Register the AI Blueprin
 # Initialize Firebase Admin SDK
@@ -341,6 +342,178 @@ def add_category(user_id):
         
         return jsonify({
             'message': 'Category added successfully',
+            'userId': user_id,
+            'error': False
+        }), 200
+    except Exception as e:
+        return jsonify({'message': str(e), 'error': True}), 400
+
+@app.route('/api/auth/user/updatecategory', methods=['POST'])
+@token_required
+def update_category(user_id):
+    """
+    Update a category
+    Requires a valid Firebase ID token
+    """
+    try:
+        data = request.get_json()
+        category_id = data.get('id')
+        category_category = data.get('category')
+        category_allocated = data.get('allocated')
+        category_spent = data.get('spent')
+        category_remaining = data.get('remaining')
+        category_period = data.get('period')
+        category_color = data.get('color')
+        category_icon = data.get('icon')
+        print(data)
+        
+        # Get user from Firebase Auth
+        user = auth.get_user(user_id)
+        
+        # Update category in user's finance data
+        category_data = db.collection('users').document(user_id).collection('finance').document('financial_data').get()
+        category_data = category_data.to_dict().get('custom_categories', [])
+        for category in category_data:
+            if category['id'] == category_id:
+                category['category'] = category_category
+                category['allocated'] = category_allocated
+                category['spent'] = category_spent
+                category['remaining'] = category_allocated - category_spent
+                category['period'] = category_period
+                category['color'] = category_color
+                category['icon'] = category_icon
+                break
+        
+        db.collection('users').document(user_id).collection('finance').document('financial_data').update({
+            'custom_categories': category_data
+        })
+        
+        return jsonify({
+            'message': 'Category updated successfully',
+            'userId': user_id,
+            'error': False
+        }), 200
+    except Exception as e:
+        return jsonify({'message': str(e), 'error': True}), 400
+
+@app.route('/api/auth/user/updatetransaction', methods=['POST'])
+@token_required
+def update_transaction(user_id):
+    """
+    Update a transaction
+    Requires a valid Firebase ID token
+    """
+    try:
+        data = request.get_json()
+        transaction_id = data.get('id')
+        transaction_title = data.get('title')
+        transaction_amount = data.get('amount')
+        transaction_category = data.get('category')
+        transaction_date = data.get('date')
+        transaction_isExpense = data.get('isExpense')
+        transaction_icon = data.get('icon')
+        
+        # Get user from Firebase Auth
+        user = auth.get_user(user_id)
+        
+        # Update transaction in user's finance data
+        db.collection('users').document(user_id).collection('finance').document('financial_data').update({
+            'transactions': firestore.ArrayUnion([{
+                'id': transaction_id,
+                'title': transaction_title,
+                'amount': transaction_amount,
+                'category': transaction_category,
+                'date': transaction_date,
+                'isExpense': transaction_isExpense,
+                'icon': transaction_icon
+            }])
+        })
+        
+        return jsonify({
+            'message': 'Transaction updated successfully',
+            'userId': user_id,
+            'error': False
+        }), 200
+    except Exception as e:
+        return jsonify({'message': str(e), 'error': True}), 400
+
+@app.route('/api/auth/user/deletetransaction', methods=['POST'])
+@token_required
+def delete_transaction(user_id):
+    """
+    Delete a transaction
+    Requires a valid Firebase ID token
+    """
+    try:
+        
+        data = request.get_json()
+        print(data)
+        transaction_id = data
+        print(transaction_id)
+        
+        
+        # Get user from Firebase Auth
+        user = auth.get_user(user_id)
+        
+        # Delete transaction from user's finance data
+        print("0")
+        transaction_data = db.collection('users').document(user_id).collection('finance').document('financial_data').get()
+        transaction_data = transaction_data.to_dict().get('transactions', [])
+        for transaction in transaction_data:
+            if transaction['id'] == transaction_id:
+                temp  = transaction['amount']
+                temp_category = transaction['category']
+                transaction_data.remove(transaction)
+                break
+        category_data = db.collection('users').document(user_id).collection('finance').document('financial_data').get()
+        category_data = category_data.to_dict().get('custom_categories', [])
+        for category in category_data:
+            if category['category'] == temp_category:
+                category['spent'] = category['spent'] - temp
+                break
+        
+        db.collection('users').document(user_id).collection('finance').document('financial_data').update({
+            'transactions': transaction_data,
+            'custom_categories': category_data,
+        })
+        
+        return jsonify({
+            'message': 'Transaction deleted successfully',
+            'userId': user_id,
+            'error': False
+        }), 200
+    except Exception as e:
+        print(e)
+        return jsonify({'message': str(e), 'error': True}), 400
+
+@app.route('/api/auth/user/deletecategory', methods=['POST'])
+@token_required
+def delete_category(user_id):
+    """
+    Delete a category
+    Requires a valid Firebase ID token
+    """
+    try:
+        data = request.get_json()
+        category_id = data.get('id')
+        
+        # Get user from Firebase Auth
+        user = auth.get_user(user_id)
+        
+        # Delete category from user's finance data
+        category_data = db.collection('users').document(user_id).collection('finance').document('financial_data').get()
+        category_data = category_data.to_dict().get('custom_categories', [])
+        for category in category_data:
+            if category['id'] == category_id:
+                category_data.remove(category)
+                break
+
+        db.collection('users').document(user_id).collection('finance').document('financial_data').update({
+            'custom_categories': category_data
+        })
+        
+        return jsonify({
+            'message': 'Category deleted successfully',
             'userId': user_id,
             'error': False
         }), 200

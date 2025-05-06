@@ -148,3 +148,108 @@ export const addCategory = async (newCategory: Category) => {
     console.log(error);
   }
 }
+
+export const updateCategory = async (category: Category) => {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('User is not authenticated');
+    }
+    console.log(user);
+
+    const token = await user.getIdToken();
+
+    const response = await fetch(`${BACKEND_URL}/api/auth/user/updatecategory`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(category),
+    });
+    const data = await response.json();
+    console.log(data);
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const deleteCategory = async (category: Category) => {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('User is not authenticated');
+    }
+    console.log(user);
+
+    const token = await user.getIdToken();
+
+    const response = await fetch(`${BACKEND_URL}/api/auth/user/deletecategory`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(category),
+    });
+    const data = await response.json();
+    console.log(data);
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const updateTransaction = async (transaction: Transaction) => {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('User is not authenticated');
+    }
+    console.log(user);
+
+    const token = await user.getIdToken();
+
+    const response = await fetch(`${BACKEND_URL}/api/auth/user/updatetransaction`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(transaction),
+    });
+    const data = await response.json();
+    console.log(data);
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const deleteTransaction = async (transactionId: string) => {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('User is not authenticated');
+    }
+    console.log(user);
+
+    const token = await user.getIdToken();
+
+    const response = await fetch(`${BACKEND_URL}/api/auth/user/deletetransaction`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(transactionId),
+    });
+    const data = await response.json();
+    console.log(data);
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+  
