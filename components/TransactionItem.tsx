@@ -47,7 +47,7 @@ const getCategoryColor = (category: string): string => {
     case 'health':
       return '#10B981';
     case 'housing':
-      return '#6366F1';
+      return '#10B981';
     case 'income':
       return Colors.success;
     default:
