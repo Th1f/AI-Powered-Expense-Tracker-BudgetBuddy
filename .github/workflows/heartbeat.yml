@@ -12,12 +12,12 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
-      - name: Navigate 
-        run: cd heartbeat
       - name: Install dependencies
+        working-directory: heartbeat
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Run heartbeat script
+        working-directory: heartbeat
         run: |
           python heartbeat.py

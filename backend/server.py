@@ -417,16 +417,45 @@ def update_transaction(user_id):
         user = auth.get_user(user_id)
         
         # Update transaction in user's finance data
+        transaction_data = db.collection('users').document(user_id).collection('finance').document('financial_data').get()
+        transaction_data = transaction_data.to_dict().get('transactions', [])
+        for transaction in transaction_data:
+            if transaction['id'] == transaction_id:
+                temp_category = transaction['category']
+                temp_amount = transaction['amount']
+                transaction['title'] = transaction_title
+                transaction['amount'] = transaction_amount
+                transaction['category'] = transaction_category
+                transaction['date'] = transaction_date
+                transaction['isExpense'] = transaction_isExpense
+                transaction['icon'] = transaction_icon
+                break
+        
+        current_category = db.collection('users').document(user_id).collection('finance').document('financial_data').get()
+        current_category = current_category.to_dict().get('custom_categories', [])
+        for category in current_category:
+            print(category['category'])
+            print(temp_category)
+            if category['category'].lower() == temp_category.lower():
+                category['spent'] -= temp_amount
+                category['remaining'] += temp_amount
+                break
+       
         db.collection('users').document(user_id).collection('finance').document('financial_data').update({
-            'transactions': firestore.ArrayUnion([{
-                'id': transaction_id,
-                'title': transaction_title,
-                'amount': transaction_amount,
-                'category': transaction_category,
-                'date': transaction_date,
-                'isExpense': transaction_isExpense,
-                'icon': transaction_icon
-            }])
+            'custom_categories': current_category
+        })
+
+        custom_categories = db.collection('users').document(user_id).collection('finance').document('financial_data').get()
+        custom_categories = custom_categories.to_dict().get('custom_categories', [])
+        for category in custom_categories:
+            if category['category'].lower() == transaction_category.lower():
+                category['spent'] += transaction_amount
+                category['remaining'] -= transaction_amount
+                break
+        
+        db.collection('users').document(user_id).collection('finance').document('financial_data').update({
+            'custom_categories': custom_categories,
+            'transactions': transaction_data
         })
         
         return jsonify({
