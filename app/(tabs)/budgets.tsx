@@ -23,11 +23,7 @@ import { addCategory, fetchUserData, fetchUserTransactions } from '../config/bac
 import { Transaction, UserData } from '../types';
 import BudgetModal from '@/components/BudgetModal';
 
-// Type definitions
 import { Category } from '../types';
-
-// Mock data for demonstration purposes
-
 
 const BudgetCard = ({ budget, onPress }: { budget: Category, onPress: () => void }) => {
   const percentSpent = (budget.spent / budget.allocated) * 100;
@@ -92,12 +88,10 @@ export default function BudgetsTab() {
   const [budgets, setBudgets] = useState<Category[]>([]);
   const [activePeriod, setActivePeriod] = useState<'monthly' | 'weekly'>('monthly');
   
-  // New category modal state
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryBudget, setNewCategoryBudget] = useState('');
   
-  // Budget detail modal state
   const [selectedBudget, setSelectedBudget] = useState<Category | null>(null);
   const [isBudgetModalVisible, setIsBudgetModalVisible] = useState(false);
   
@@ -115,7 +109,6 @@ export default function BudgetsTab() {
       });
       
       return () => {
-        // Cleanup function if needed when screen loses focus
       };
     }, [])
   );
@@ -138,7 +131,6 @@ export default function BudgetsTab() {
   
   const toggleAddModal = () => {
     setIsAddModalVisible(!isAddModalVisible);
-    // Reset form fields when closing
     if (isAddModalVisible) {
       setNewCategoryName('');
       setNewCategoryBudget('');
@@ -158,15 +150,12 @@ export default function BudgetsTab() {
   
   const handleUpdateBudget = async (updatedBudget: Category) => {
     try {
-      // For now just update the local state
-      // In a real implementation, this would call the API
       const updatedBudgets = budgets.map(b => 
         b.id === updatedBudget.id ? updatedBudget : b
       );
       
       setBudgets(updatedBudgets);
       
-      // Recalculate the remaining amount based on the new allocated budget
       const budget = updatedBudgets.find(b => b.id === updatedBudget.id);
       if (budget) {
         budget.remaining = budget.allocated - budget.spent;
@@ -181,8 +170,6 @@ export default function BudgetsTab() {
   
   const handleDeleteBudget = async (budgetId: string) => {
     try {
-      // For now just update the local state
-      // In a real implementation, this would call the API
       const updatedBudgets = budgets.filter(b => b.id !== budgetId);
       
       setBudgets(updatedBudgets);
@@ -195,19 +182,15 @@ export default function BudgetsTab() {
   };
   
   const handleAddCategory = () => {
-    // Validate inputs
     if (!newCategoryName.trim() || !newCategoryBudget.trim()) {
-      // Add error handling here if needed
       return;
     }
     
     const budget = parseFloat(newCategoryBudget);
     if (isNaN(budget) || budget <= 0) {
-      // Add error handling for invalid budget
       return;
     }
     
-    // Create new category (currently just for UI, not connected to backend)
     const newCategory: Category = {
       id: (budgets.length + 1).toString(),
       category: newCategoryName,
@@ -221,14 +204,11 @@ export default function BudgetsTab() {
 
     addCategory(newCategory);
     
-    // Add to state
     setBudgets([...budgets, newCategory]);
     
-    // Close modal
     toggleAddModal();
   };
   
-  // Helper function to generate random colors for new categories
   const getRandomColor = () => {
     const colors = ['#4CAF50', '#2196F3', '#9C27B0', '#FF9800', '#F44336', '#00BCD4', '#3F51B5', '#FF5722'];
     return colors[Math.floor(Math.random() * colors.length)];
