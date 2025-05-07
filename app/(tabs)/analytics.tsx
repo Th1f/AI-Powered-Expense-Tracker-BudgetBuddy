@@ -14,7 +14,6 @@ import InsightCard from '../../components/InsightCard';
 import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../../constants/Theme';
 import { auth } from '../config/firebase';
 
-// Mock data for demonstration purposes
 const mockInsights = [
   { 
     id: '1', 
@@ -42,7 +41,6 @@ const mockInsights = [
   },
 ];
 
-// Mock data for spending trends
 const monthlySpending = [
   { month: 'Jan', amount: 1800 },
   { month: 'Feb', amount: 1650 },
@@ -50,7 +48,6 @@ const monthlySpending = [
   { month: 'Apr', amount: 1250 },
 ];
 
-// Mock data for weekly spending
 const weeklySpending = [
   { week: 'Week 1', amount: 450 },
   { week: 'Week 2', amount: 320 },
@@ -58,7 +55,6 @@ const weeklySpending = [
   { week: 'Week 4', amount: 200 },
 ];
 
-// Mock spending breakdown by category
 const categoryBreakdown = [
   { name: 'Food', percentage: 35 },
   { name: 'Housing', percentage: 30 },
@@ -77,7 +73,6 @@ export default function Analytics() {
 
   console.log(auth.currentUser?.email);
 
-  // Helper function to render the bar chart (simplified)
   const renderBarChart = () => {
     const data = timeView === 'monthly' ? monthlySpending : weeklySpending;
     const maxAmount = Math.max(...data.map(item => item.amount));
@@ -85,7 +80,6 @@ export default function Analytics() {
     return (
       <View style={styles.barChart}>
         {data.map((item, index) => {
-          // Get the label and check if it's the current period
           const label = timeView === 'monthly' ? (item as typeof monthlySpending[0]).month : (item as typeof weeklySpending[0]).week;
           const isCurrentPeriod = timeView === 'monthly' 
             ? label === 'Apr' 
@@ -110,7 +104,6 @@ export default function Analytics() {
     );
   };
 
-  // Helper function to render spending breakdown
   const renderSpendingBreakdown = () => {
     return (
       <View style={styles.pieChartContainer}>
@@ -132,7 +125,6 @@ export default function Analytics() {
     );
   };
 
-  // Helper function to get color for category
   const getCategoryColor = (category: string) => {
     switch (category.toLowerCase()) {
       case 'food':

@@ -8,12 +8,10 @@ export default function RootLayout() {
   const segments = useSegments();
 
   useEffect(() => {
-    // When the app loads initially, redirect to the login screen
     const inAuthGroup = segments[0] === '(tabs)';
     const isAuthScreen = segments[0] === 'login' || segments[0] === 'signup';
     const isAddScreen = segments[0] === 'add';
     
-    // If user is not authenticated and not on an auth screen, redirect to login
     if (!inAuthGroup && !isAuthScreen && !isAddScreen) {
       router.replace('/login');
     }

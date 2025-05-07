@@ -92,7 +92,13 @@ export default function Dashboard() {
     router.push('/add/scan');
   };
 
-  const handleSettings = () => {
+  const handleLogout = async () => {
+    try {
+      await auth.signOut();
+      console.log('User signed out');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   useFocusEffect(
@@ -105,7 +111,6 @@ export default function Dashboard() {
       });
       
       return () => {
-        // Cleanup function if needed when screen loses focus
       };
     }, [])
   );
@@ -132,8 +137,8 @@ export default function Dashboard() {
           <TouchableOpacity style={styles.iconButton} onPress={handleLogin}>
             <Ionicons name="notifications-outline" size={24} color={Colors.textPrimary} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton} onPress={handleSettings}>
-            <Ionicons name="settings-outline" size={24} color={Colors.textPrimary} />
+          <TouchableOpacity style={styles.iconButton} onPress={handleLogout}>
+            <Ionicons name="log-out-outline" size={24} color={Colors.textPrimary} />
           </TouchableOpacity>
         </View>
       </View>
