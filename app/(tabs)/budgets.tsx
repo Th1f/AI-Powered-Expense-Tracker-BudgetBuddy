@@ -229,36 +229,6 @@ export default function BudgetsTab() {
       />
       
       <View style={styles.summaryContainer}>
-        <View style={styles.periodToggle}>
-          <TouchableOpacity
-            style={[
-              styles.periodButton,
-              activePeriod === 'monthly' && styles.activePeriodButton
-            ]}
-            onPress={() => setActivePeriod('monthly')}
-          >
-            <Text style={[
-              styles.periodButtonText,
-              activePeriod === 'monthly' && styles.activePeriodButtonText
-            ]}>
-              Monthly
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.periodButton,
-              activePeriod === 'weekly' && styles.activePeriodButton
-            ]}
-            onPress={() => setActivePeriod('weekly')}
-          >
-            <Text style={[
-              styles.periodButtonText,
-              activePeriod === 'weekly' && styles.activePeriodButtonText
-            ]}>
-              Weekly
-            </Text>
-          </TouchableOpacity>
-        </View>
         
         <View style={styles.totalBudgetCard}>
           <Text style={styles.totalBudgetTitle}>Total Budget</Text>

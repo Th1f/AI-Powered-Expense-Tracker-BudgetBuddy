@@ -1,7 +1,7 @@
 import { UserData, Transaction, Category } from "../types";
 import {auth} from "./firebase";
 const url = ["http://127.0.0.1:5000", "https://budgetbuddybackend-64v6.onrender.com"];
-const BACKEND_URL =url[0];
+const BACKEND_URL =url[1];
 interface TransactionData{
   transactions: Transaction[];
   error: boolean;

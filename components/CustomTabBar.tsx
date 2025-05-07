@@ -212,60 +212,16 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
         })}
       </View>
       
-      {/* Manual entry button */}
-      <Animated.View style={[styles.actionButton, manualButtonAnimation]}>
-        <TouchableOpacity
-          style={[styles.actionButtonInner, { backgroundColor: Colors.secondary }]}
-          onPress={() => handleAction('/add/manual')}
-        >
-          <Ionicons name="create" size={22} color="#FFFFFF" />
-        </TouchableOpacity>
-        <View style={styles.labelContainer}>
-          <Text style={styles.actionLabel}>Manual</Text>
-        </View>
-      </Animated.View>
-      
-      {/* Voice entry button */}
-      <Animated.View style={[styles.actionButton, voiceButtonAnimation]}>
-        <TouchableOpacity
-          style={[styles.actionButtonInner, { backgroundColor: Colors.accent }]}
-          onPress={() => handleAction('/add/voice')}
-        >
-          <Ionicons name="mic" size={22} color="#FFFFFF" />
-        </TouchableOpacity>
-        <View style={[styles.labelContainer, styles.leftLabelContainer]}>
-          <Text style={styles.actionLabel}>Voice</Text>
-        </View>
-      </Animated.View>
-      
-      {/* Scan receipt button */}
-      <Animated.View style={[styles.actionButton, scanButtonAnimation]}>
-        <TouchableOpacity
-          style={[styles.actionButtonInner, { backgroundColor: Colors.primary }]}
-          onPress={() => handleAction('/add/scan')}
-        >
-          <Ionicons name="scan" size={22} color="#FFFFFF" />
-        </TouchableOpacity>
-        <View style={[styles.labelContainer, styles.rightLabelContainer]}>
-          <Text style={styles.actionLabel}>Scan</Text>
-        </View>
-      </Animated.View>
-      
       {/* Main add button */}
       <TouchableOpacity
         style={styles.addButton}
-        onPress={toggleMenu}
+        onPress={() => handleAction('/add/manual')}
         activeOpacity={0.9}
       >
         <Animated.View 
           style={[
             styles.addButtonInner, 
             { 
-              transform: [
-                { rotate: rotation },
-                { scale: scale }
-              ],
-              backgroundColor
             }
           ]}
         >
