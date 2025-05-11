@@ -233,10 +233,9 @@ export const deleteTransaction = async (transactionId: string) => {
     if (!user) {
       throw new Error('User is not authenticated');
     }
-    console.log(user);
+
 
     const token = await user.getIdToken();
-
     const response = await fetch(`${BACKEND_URL}/api/auth/user/deletetransaction`, {
       method: 'POST',
       headers: {
@@ -245,6 +244,7 @@ export const deleteTransaction = async (transactionId: string) => {
       },
       body: JSON.stringify(transactionId),
     });
+    console.log(response);
     const data = await response.json();
     console.log(data);
     return data;
