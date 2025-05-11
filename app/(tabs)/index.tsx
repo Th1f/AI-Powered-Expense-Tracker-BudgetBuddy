@@ -116,9 +116,20 @@ export default function Dashboard() {
   );
 
   const calculateUsedBudget = () => {
-    const usedBudget = transactions.reduce((total, transaction) => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
+    const currentMonthTransactions = transactions.filter(transaction => {
+      const transactionDate = new Date(transaction.date);
+      return transactionDate.getMonth() === currentMonth && 
+             transactionDate.getFullYear() === currentYear;
+    });
+    
+    const usedBudget = currentMonthTransactions.reduce((total, transaction) => {
       return total + (transaction.isExpense ? transaction.amount : 0);
     }, 0);
+    
     return usedBudget;
   };
   const month = ["January","February","March","April","May","June","July","August","September","October","November","December"];

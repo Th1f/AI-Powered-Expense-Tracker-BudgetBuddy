@@ -250,31 +250,7 @@ export default function TabTransactions() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.filtersContainer}
         >
-          {filters.map((filter) => (
-            <TouchableOpacity
-              key={filter.id}
-              style={[
-                styles.filterButton,
-                activeFilter === filter.id && styles.activeFilterButton
-              ]}
-              onPress={() => handleFilterPress(filter.id)}
-            >
-              <Ionicons 
-                name={filter.icon as any} 
-                size={16} 
-                color={activeFilter === filter.id ? '#fff' : Colors.textPrimary} 
-                style={styles.filterIcon}
-              />
-              <Text 
-                style={[
-                  styles.filterText,
-                  activeFilter === filter.id && styles.activeFilterText
-                ]}
-              >
-                {filter.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
+          
         </ScrollView>
       </View>
       
@@ -326,9 +302,9 @@ const styles = StyleSheet.create({
   searchContainer: {
     paddingHorizontal: Spacing.m,
     paddingTop: Spacing.m,
-    paddingBottom: Spacing.s,
+    paddingBottom: Spacing.xs,
     backgroundColor: Colors.background,
-    borderBottomWidth: 1,
+    borderBottomWidth: 0,
     borderBottomColor: Colors.border,
   },
   searchInputContainer: {
@@ -336,6 +312,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: Colors.cardBackground,
     borderRadius: BorderRadius.m,
+    padding:Spacing.s,
     paddingHorizontal: Spacing.s,
     marginBottom: Spacing.s,
     ...Shadow.small,

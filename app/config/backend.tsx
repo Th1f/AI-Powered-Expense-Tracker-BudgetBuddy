@@ -1,7 +1,7 @@
 import { UserData, Transaction, Category } from "../types";
 import {auth} from "./firebase";
 const url = ["http://127.0.0.1:5000", "https://budgetbuddybackend-64v6.onrender.com"];
-const BACKEND_URL =url[0];
+const BACKEND_URL =url[1];
 interface TransactionData{
   transactions: Transaction[];
   error: boolean;
@@ -233,10 +233,9 @@ export const deleteTransaction = async (transactionId: string) => {
     if (!user) {
       throw new Error('User is not authenticated');
     }
-    console.log(user);
+
 
     const token = await user.getIdToken();
-
     const response = await fetch(`${BACKEND_URL}/api/auth/user/deletetransaction`, {
       method: 'POST',
       headers: {
@@ -245,6 +244,7 @@ export const deleteTransaction = async (transactionId: string) => {
       },
       body: JSON.stringify(transactionId),
     });
+    console.log(response);
     const data = await response.json();
     console.log(data);
     return data;
