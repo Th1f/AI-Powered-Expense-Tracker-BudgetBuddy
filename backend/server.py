@@ -7,11 +7,13 @@ from flask_cors import CORS
 import firebase_admin
 from firebase_admin import credentials, auth
 from firebase_admin import firestore
-
+from langchain_google_genai import ChatGoogleGenerativeAI
+from dotenv import load_dotenv
 
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
+load_dotenv()
 
 # Register the AI Blueprin
 # Initialize Firebase Admin SDK
@@ -37,6 +39,16 @@ except Exception as e:
     print(f"Error initializing Firebase: {e}")
     # For development, you can continue without Firebase
     # In production, you should handle this error appropriately
+
+# Initialize AI
+try:
+    # First, check if credentials are provided as a JSON string in an environment variable
+    ai_creds_json = os.environ.get('AI_CREDENTIALS')
+    ai = ChatGoogleGenerativeAI(model="gemini-1.5-flash", api_key=ai_creds_json)
+    print("AI initialized successfully")
+except Exception as e:
+    print(f"Error initializing AI: {e}")
+
 
 # Authentication decorator
 def token_required(f):
@@ -238,10 +250,30 @@ def add_expense(user_id):
         expense_title = data.get('title')
         expense_amount = data.get('amount')
         expense_category = data.get('category')
-        expense_date = data.get('date')
-        expense_isExpense = data.get('isExpense')
         expense_icon = db.collection('users').document(user_id).collection('finance').document('financial_data').get()
         expense_icon = expense_icon.to_dict().get('custom_categories', [])
+        if expense_category.lower() == "auto":
+            json_schema = {
+                "title": "expense",
+                "description": "Catogorise a expense",
+                "type": "object",
+                "properties": {
+                    "category": {
+                        "type": "string",
+                        "description": "The description of the expense",
+                    },
+                },
+                "required": ["category"],
+            }
+            auto_category = ai.with_structured_output(json_schema)
+            categories = ""
+            for category in expense_icon:
+                categories += category['category'] + ", "
+            prompt = "Catogorise the expense based on the description and choose only one category from the list: description: " + expense_title + ","+ " category: " + categories
+            result = auto_category.invoke(prompt)
+            expense_category = result['category']
+        expense_date = data.get('date')
+        expense_isExpense = data.get('isExpense')
         for category in expense_icon:
             if category['category'].lower() == expense_category.lower():
                 expense_icon = category['icon']
