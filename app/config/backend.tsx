@@ -1,7 +1,7 @@
 import { UserData, Transaction, Category } from "../types";
 import {auth} from "./firebase";
 const url = ["http://127.0.0.1:5000", "https://budgetbuddybackend-64v6.onrender.com"];
-const BACKEND_URL =url[1];
+const BACKEND_URL =url[0];
 interface TransactionData{
   transactions: Transaction[];
   error: boolean;
@@ -97,7 +97,7 @@ export const fetchUserTransactions = async ():Promise<Transaction[] | null> => {
   }
 }
 
-export const addExpense = async (expense: Transaction ) => {
+export const addExpense = async (expense: Transaction, isAutoCategory: boolean ) => {
   try {
     const user = auth.currentUser;
     if (!user) {
@@ -106,6 +106,11 @@ export const addExpense = async (expense: Transaction ) => {
     console.log(user);
 
     const token = await user.getIdToken();
+
+    if (isAutoCategory) {
+      expense.category = "auto";
+    }
+    console.log(expense);
 
     const response = await fetch(`${BACKEND_URL}/api/auth/addexpenses`, {
       method: 'POST',
@@ -245,6 +250,56 @@ export const deleteTransaction = async (transactionId: string) => {
       body: JSON.stringify(transactionId),
     });
     console.log(response);
+    const data = await response.json();
+    console.log(data);
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const generateInsights = async () => {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('User is not authenticated');
+    }
+    console.log(user);
+
+    const token = await user.getIdToken();
+
+    const response = await fetch(`${BACKEND_URL}/api/auth/user/generateInsights`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+    });
+    const data = await response.json();
+    console.log(data);
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const getInsights = async () => {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('User is not authenticated');
+    }
+    console.log(user);
+
+    const token = await user.getIdToken();
+
+    const response = await fetch(`${BACKEND_URL}/api/auth/user/getInsights`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+    });
     const data = await response.json();
     console.log(data);
     return data;

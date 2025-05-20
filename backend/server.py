@@ -7,11 +7,13 @@ from flask_cors import CORS
 import firebase_admin
 from firebase_admin import credentials, auth
 from firebase_admin import firestore
-
+from langchain_google_genai import ChatGoogleGenerativeAI
+from dotenv import load_dotenv
 
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
+load_dotenv()
 
 # Register the AI Blueprin
 # Initialize Firebase Admin SDK
@@ -37,6 +39,16 @@ except Exception as e:
     print(f"Error initializing Firebase: {e}")
     # For development, you can continue without Firebase
     # In production, you should handle this error appropriately
+
+# Initialize AI
+try:
+    # First, check if credentials are provided as a JSON string in an environment variable
+    ai_creds_json = os.environ.get('AI_CREDENTIALS')
+    ai = ChatGoogleGenerativeAI(model="gemini-1.5-flash", api_key=ai_creds_json)
+    print("AI initialized successfully")
+except Exception as e:
+    print(f"Error initializing AI: {e}")
+
 
 # Authentication decorator
 def token_required(f):
@@ -238,10 +250,30 @@ def add_expense(user_id):
         expense_title = data.get('title')
         expense_amount = data.get('amount')
         expense_category = data.get('category')
-        expense_date = data.get('date')
-        expense_isExpense = data.get('isExpense')
         expense_icon = db.collection('users').document(user_id).collection('finance').document('financial_data').get()
         expense_icon = expense_icon.to_dict().get('custom_categories', [])
+        if expense_category.lower() == "auto":
+            json_schema = {
+                "title": "expense",
+                "description": "Catogorise a expense",
+                "type": "object",
+                "properties": {
+                    "category": {
+                        "type": "string",
+                        "description": "The description of the expense",
+                    },
+                },
+                "required": ["category"],
+            }
+            auto_category = ai.with_structured_output(json_schema)
+            categories = ""
+            for category in expense_icon:
+                categories += category['category'] + ", "
+            prompt = "Catogorise the expense based on the description and choose only one category from the list: description: " + expense_title + ","+ " category: " + categories
+            result = auto_category.invoke(prompt)
+            expense_category = result['category']
+        expense_date = data.get('date')
+        expense_isExpense = data.get('isExpense')
         for category in expense_icon:
             if category['category'].lower() == expense_category.lower():
                 expense_icon = category['icon']
@@ -499,6 +531,7 @@ def delete_transaction(user_id):
         for category in category_data:
             if category['category'] == temp_category:
                 category['spent'] = category['spent'] - temp
+                category['remaining'] = category['remaining'] + temp
                 break
         
         db.collection('users').document(user_id).collection('finance').document('financial_data').update({
@@ -544,6 +577,91 @@ def delete_category(user_id):
         return jsonify({
             'message': 'Category deleted successfully',
             'userId': user_id,
+            'error': False
+        }), 200
+    except Exception as e:
+        return jsonify({'message': str(e), 'error': True}), 400
+
+@app.route('/api/auth/user/generateInsights', methods=['GET'])
+@token_required
+def generate_insights(user_id):
+
+    json_schema = {
+                "title": "insights",
+                "description": "Provide insights",
+                "type": "object",
+                "properties": {
+                    "insights": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                    "description": "The id of the insight",
+                                },
+                                "insightTitle": {
+                                    "type": "string",
+                                    "description": "The title of the insight",
+                                },
+                                "insight": {
+                                    "type": "string",
+                                    "description": "The insight",
+                                },
+                                "insightType": {
+                                    "type": "string",
+                                    "description": "The type of insight can only be warning or tip (Tips are suggestions to improve your budget)",
+                                },
+                            },
+                            "required": ["id", "insightTitle", "insight", "insightType"],
+                        },
+                    },
+                },
+                "required": ["insights"],
+            }
+    try:
+        insightAi = ai.with_structured_output(json_schema)
+        transaction_data = db.collection('users').document(user_id).collection('finance').document('financial_data').get()
+        transaction_data = transaction_data.to_dict()
+        transaction_info = transaction_data.get('transactions', [])
+        category_data = transaction_data.get('custom_categories', [])
+        prompt = "You are a financial advisor. Provide insights based on the following data:"
+        for transaction in transaction_info:
+            prompt += f"Title: {transaction['title']}\n"
+            prompt += f"Amount: {transaction['amount']}\n"
+            prompt += f"Category: {transaction['category']}\n"
+            prompt += f"Date: {transaction['date']}\n"
+            prompt += f"Is Expense: {transaction['isExpense']}\n"
+            prompt += f"Icon: {transaction['icon']}\n"
+            prompt += "\n"
+        for category in category_data:
+            prompt += f"Category: {category['category']}\n"
+            prompt += f"Spent: {category['spent']}\n"
+            prompt += f"Remaining: {category['remaining']}\n"
+            prompt += "\n"
+        res = insightAi.invoke(prompt)
+        print(res)
+        insights = res.get('insights', [])
+        #update insights in database
+        db.collection('users').document(user_id).collection('finance').document('financial_data').update({
+            'insights': insights
+        })
+        print(insights)
+        return jsonify({
+            'insights': insights,
+            'error': False
+        }), 200
+    except Exception as e:
+        return jsonify({'message': str(e), 'error': True}), 400
+
+@app.route('/api/auth/user/getInsights', methods=['GET'])
+@token_required
+def get_insights(user_id):
+    try:
+        insights_data = db.collection('users').document(user_id).collection('finance').document('financial_data').get()
+        insights_info = insights_data.to_dict()
+        return jsonify({
+            'insights': insights_info.get('insights', []),
             'error': False
         }), 200
     except Exception as e:

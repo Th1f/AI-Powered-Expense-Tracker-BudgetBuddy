@@ -33,7 +33,8 @@ export default function ManualExpenseScreen() {
   const [user, setUser] = useState<UserData | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<Category>(categories[0]);
- 
+  const [isAutoCategory, setIsAutoCategory] = useState(false);
+  
   
   useEffect(() => {
     fetchUserData().then((userData) => {
@@ -95,7 +96,7 @@ export default function ManualExpenseScreen() {
       isExpense: true
     };
 
-    addExpense(expense);
+    addExpense(expense, isAutoCategory);
 
     setTimeout(() => {
       setIsSaving(false);
@@ -155,43 +156,73 @@ export default function ManualExpenseScreen() {
             onChangeText={setDescription}
           />
         </View>
+        <View style={styles.formField}>
+          <Text style={styles.label}>AI Feature</Text>
+          <TouchableOpacity 
+            style={styles.toggleRow}
+            onPress={() => {
+              setIsAutoCategory(!isAutoCategory);
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            }}
+          >
+            <View style={styles.toggleTextContainer}>
+              <Text style={styles.toggleLabel}>Auto-categorize expense</Text>
+              <Text style={styles.toggleDescription}>Use AI to categorize the expense</Text>
+            </View>
+            <View style={[styles.toggleSwitch, isAutoCategory && styles.toggleSwitchActive]}>
+              <View style={[styles.toggleDot, isAutoCategory && styles.toggleDotActive]} />
+            </View>
+          </TouchableOpacity>
+        </View>
         
         <View style={styles.formField}>
-          <Text style={styles.label}>Category</Text>
-          <View style={styles.categoriesContainer}>
+          <View style={styles.categoryLabelContainer}>
+            <Text style={styles.label}>Category</Text>
+            {isAutoCategory && (
+              <Text style={styles.disabledText}>AI will select the best category</Text>
+            )}
+          </View>
+          <View style={[styles.categoriesContainer, isAutoCategory && styles.disabledContainer]}>
             <ScrollView 
               horizontal 
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.categoriesScroll}
+              scrollEnabled={!isAutoCategory}
             >
               {categories.map((category) => (
                 <TouchableOpacity
                   key={category.id}
                   style={[
                     styles.categoryItem,
-                    selectedCategory.id === category.id && styles.selectedCategoryItem
+                    selectedCategory.id === category.id && styles.selectedCategoryItem,
+                    isAutoCategory && styles.disabledCategoryItem
                   ]}
                   onPress={() => {
-                    setSelectedCategory(category);
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    if (!isAutoCategory) {
+                      setSelectedCategory(category);
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    }
                   }}
+                  disabled={isAutoCategory}
                 >
                   <View 
                     style={[
                       styles.categoryIcon, 
-                      { backgroundColor: category.color + '20' }
+                      { backgroundColor: category.color + '20' },
+                      isAutoCategory && styles.disabledCategoryIcon
                     ]}
                   >
                     <Ionicons 
                       name={category.icon as any} 
                       size={24} 
-                      color={category.color} 
+                      color={isAutoCategory ? Colors.textSecondary : category.color} 
                     />
                   </View>
                   <Text 
                     style={[
                       styles.categoryLabel,
-                      selectedCategory.id === category.id && styles.selectedCategoryLabel
+                      selectedCategory.id === category.id && !isAutoCategory && styles.selectedCategoryLabel,
+                      isAutoCategory && styles.disabledCategoryLabel
                     ]}
                   >
                     {category.category}
@@ -438,10 +469,78 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.cardBackground,
     borderRadius: BorderRadius.m,
     padding: Spacing.m,
-    minHeight: 120,
     fontSize: FontSize.s,
     color: Colors.textPrimary,
+    minHeight: 80,
     textAlignVertical: 'top',
     ...Shadow.small,
+  },
+  toggleRow: {
+    flexDirection: 'row',
+    backgroundColor: Colors.cardBackground,
+    borderRadius: BorderRadius.m,
+    padding: Spacing.m,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    ...Shadow.small,
+  },
+  toggleTextContainer: {
+    flex: 1,
+  },
+  toggleLabel: {
+    fontSize: FontSize.s,
+    fontWeight: '600',
+    color: Colors.textPrimary,
+  },
+  toggleDescription: {
+    fontSize: FontSize.xs,
+    color: Colors.textSecondary,
+    marginTop: 2,
+  },
+  toggleSwitch: {
+    width: 50,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: Colors.background,
+    padding: 2,
+    justifyContent: 'center',
+  },
+  toggleSwitchActive: {
+    backgroundColor: Colors.primary + '30',
+  },
+  toggleDot: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: Colors.textSecondary,
+  },
+  toggleDotActive: {
+    backgroundColor: Colors.primary,
+    transform: [{ translateX: 22 }],
+  },
+  categoryLabelContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.xs,
+  },
+  disabledText: {
+    fontSize: FontSize.xs,
+    fontStyle: 'italic',
+    color: Colors.primary,
+  },
+  disabledContainer: {
+    opacity:10,
+    position: 'relative',
+  },
+  disabledCategoryItem: {
+    opacity: 0.4,
+  },
+  disabledCategoryIcon: {
+    opacity: 0.7,
+  },
+  disabledCategoryLabel: {
+    color: Colors.textSecondary,
+    opacity: 0.7,
   },
 });

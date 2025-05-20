@@ -18,10 +18,10 @@ import BudgetCard from '../../components/BudgetCard';
 import TransactionItem from '../../components/TransactionItem';
 import InsightCard from '../../components/InsightCard';
 import AddExpenseFAB from '../../components/AddExpenseFAB';
-import { fetchUserData } from '../config/backend';
+import { fetchUserData, generateInsights, getInsights } from '../config/backend';
 import { auth } from '../config/firebase';
 import { Category, Transaction, UserData } from '../types';
-
+import { Insight } from '../types';
 // Mock data for demonstration
 
 const mockTransactions = [
@@ -57,7 +57,7 @@ export default function Dashboard() {
   const router = useRouter();
   const totalBudget = 2000;
   const totalSpent = 1250;
-  const [insights, setInsights] = useState(mockInsights);
+  const [insights, setInsights] = useState<Insight[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [customCategories, setCustomCategories] = useState<Category[]>([]);
   const dismissInsight = (id: string) => {
@@ -80,7 +80,9 @@ export default function Dashboard() {
     router.push('/add/manual');
   };
   const handleLogin = () => {
-    router.push('/login');
+    generateInsights().then((insights) => {
+      setInsights(insights.insights);
+    });
   };
 
   const handleAddExpenseVoice = () => {
@@ -109,7 +111,10 @@ export default function Dashboard() {
         setTransactions(userData?.transactions ?? []);
         setCustomCategories(userData?.custom_categories ?? []);
       });
-      
+      getInsights().then((insights) => {
+        console.log(insights);
+        setInsights(insights.insights);
+      });
       return () => {
       };
     }, [])
@@ -146,7 +151,7 @@ export default function Dashboard() {
         </View>
         <View style={styles.headerButtons}>
           <TouchableOpacity style={styles.iconButton} onPress={handleLogin}>
-            <Ionicons name="notifications-outline" size={24} color={Colors.textPrimary} />
+            <Ionicons name="flash-outline" size={24} color={Colors.textPrimary} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.iconButton} onPress={handleLogout}>
             <Ionicons name="log-out-outline" size={24} color={Colors.textPrimary} />
@@ -158,7 +163,7 @@ export default function Dashboard() {
           <View style={styles.budgetCardHeader}>
             <Text style={styles.budgetCardTitle}>Total Budget</Text>
             <View style={styles.budgetPeriod}>
-              <Text style={styles.budgetPeriodText}>April 2025</Text>
+              <Text style={styles.budgetPeriodText}>{month[new Date().getMonth()]} {new Date().getFullYear()}</Text>
               <Ionicons name="chevron-down" size={16} color={Colors.textSecondary} />
             </View>
           </View>
@@ -190,17 +195,14 @@ export default function Dashboard() {
         <View style={styles.sectionContainer}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>AI Insights</Text>
-            <TouchableOpacity onPress={handleViewAllInsights}>
-              <Text style={styles.seeAllText}>See All</Text>
-            </TouchableOpacity>
           </View>
           {insights.length > 0 ? (
-            insights.map((insight) => (
+            insights.map((insight: Insight)  => (
               <InsightCard
                 key={insight.id}
-                title={insight.title}
-                description={insight.description}
-                type={insight.type as 'warning' | 'tip' | 'prediction'}
+                title={insight.insightTitle}
+                description={insight.insight}
+                type={insight.insightType}
                 onDismiss={() => dismissInsight(insight.id)}
               />
             ))
