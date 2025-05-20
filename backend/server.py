@@ -531,6 +531,7 @@ def delete_transaction(user_id):
         for category in category_data:
             if category['category'] == temp_category:
                 category['spent'] = category['spent'] - temp
+                category['remaining'] = category['remaining'] + temp
                 break
         
         db.collection('users').document(user_id).collection('finance').document('financial_data').update({
@@ -576,6 +577,91 @@ def delete_category(user_id):
         return jsonify({
             'message': 'Category deleted successfully',
             'userId': user_id,
+            'error': False
+        }), 200
+    except Exception as e:
+        return jsonify({'message': str(e), 'error': True}), 400
+
+@app.route('/api/auth/user/generateInsights', methods=['GET'])
+@token_required
+def generate_insights(user_id):
+
+    json_schema = {
+                "title": "insights",
+                "description": "Provide insights",
+                "type": "object",
+                "properties": {
+                    "insights": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                    "description": "The id of the insight",
+                                },
+                                "insightTitle": {
+                                    "type": "string",
+                                    "description": "The title of the insight",
+                                },
+                                "insight": {
+                                    "type": "string",
+                                    "description": "The insight",
+                                },
+                                "insightType": {
+                                    "type": "string",
+                                    "description": "The type of insight can only be warning or tip (Tips are suggestions to improve your budget)",
+                                },
+                            },
+                            "required": ["id", "insightTitle", "insight", "insightType"],
+                        },
+                    },
+                },
+                "required": ["insights"],
+            }
+    try:
+        insightAi = ai.with_structured_output(json_schema)
+        transaction_data = db.collection('users').document(user_id).collection('finance').document('financial_data').get()
+        transaction_data = transaction_data.to_dict()
+        transaction_info = transaction_data.get('transactions', [])
+        category_data = transaction_data.get('custom_categories', [])
+        prompt = "You are a financial advisor. Provide insights based on the following data:"
+        for transaction in transaction_info:
+            prompt += f"Title: {transaction['title']}\n"
+            prompt += f"Amount: {transaction['amount']}\n"
+            prompt += f"Category: {transaction['category']}\n"
+            prompt += f"Date: {transaction['date']}\n"
+            prompt += f"Is Expense: {transaction['isExpense']}\n"
+            prompt += f"Icon: {transaction['icon']}\n"
+            prompt += "\n"
+        for category in category_data:
+            prompt += f"Category: {category['category']}\n"
+            prompt += f"Spent: {category['spent']}\n"
+            prompt += f"Remaining: {category['remaining']}\n"
+            prompt += "\n"
+        res = insightAi.invoke(prompt)
+        print(res)
+        insights = res.get('insights', [])
+        #update insights in database
+        db.collection('users').document(user_id).collection('finance').document('financial_data').update({
+            'insights': insights
+        })
+        print(insights)
+        return jsonify({
+            'insights': insights,
+            'error': False
+        }), 200
+    except Exception as e:
+        return jsonify({'message': str(e), 'error': True}), 400
+
+@app.route('/api/auth/user/getInsights', methods=['GET'])
+@token_required
+def get_insights(user_id):
+    try:
+        insights_data = db.collection('users').document(user_id).collection('finance').document('financial_data').get()
+        insights_info = insights_data.to_dict()
+        return jsonify({
+            'insights': insights_info.get('insights', []),
             'error': False
         }), 200
     except Exception as e:
