@@ -28,3 +28,10 @@ export interface UserData {
   transactions: Transaction[];
   custom_categories: Category[];
 }
+
+export interface Insight {
+  id: string;
+  insightTitle: string;
+  insight: string;
+  insightType: string;
+}

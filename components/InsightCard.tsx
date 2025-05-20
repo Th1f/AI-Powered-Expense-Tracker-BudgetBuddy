@@ -6,7 +6,7 @@ import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../constants/Th
 interface InsightCardProps {
   title: string;
   description: string;
-  type: 'tip' | 'warning' | 'prediction';
+  type: string;
   onPress?: () => void;
   onDismiss?: () => void;
 }
@@ -58,11 +58,6 @@ const InsightCard: React.FC<InsightCardProps> = ({
           <Ionicons name={typeIcon} size={20} color={typeColor} />
         </View>
         <Text style={styles.title}>{title}</Text>
-        {onDismiss && (
-          <TouchableOpacity onPress={onDismiss} style={styles.dismissButton}>
-            <Ionicons name="close" size={20} color={Colors.textSecondary} />
-          </TouchableOpacity>
-        )}
       </View>
       
       <Text style={styles.description}>{description}</Text>
@@ -72,7 +67,6 @@ const InsightCard: React.FC<InsightCardProps> = ({
           <Ionicons name="flash" size={14} color={Colors.primary} />
           <Text style={styles.aiText}>AI Insight</Text>
         </View>
-        <Text style={styles.actionText}>Tap to learn more</Text>
       </View>
     </TouchableOpacity>
   );

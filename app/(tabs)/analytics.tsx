@@ -15,35 +15,10 @@ import { Ionicons } from '@expo/vector-icons';
 import InsightCard from '../../components/InsightCard';
 import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../../constants/Theme';
 import { auth } from '../config/firebase';
-import { fetchUserData } from '../config/backend';
-import { Transaction, UserData, Category } from '../types';
+import { fetchUserData, getInsights } from '../config/backend';
+import { Transaction, UserData, Category, Insight } from '../types';
 
-const mockInsights = [
-  { 
-    id: '1', 
-    title: 'Unusual spending detected', 
-    description: 'Your food expenses this week are 30% higher than your weekly average. Consider checking your receipts.',
-    type: 'warning'
-  },
-  { 
-    id: '2', 
-    title: 'Save $120 next month', 
-    description: 'Based on your spending patterns, switching to this grocery store could save you approximately $120 next month.',
-    type: 'tip'
-  },
-  { 
-    id: '3', 
-    title: 'Entertainment budget forecast', 
-    description: "At your current rate, you'll exceed your entertainment budget by $45 this month.",
-    type: 'warning'
-  },
-  { 
-    id: '4', 
-    title: 'Monthly spending pattern', 
-    description: "You tend to spend more during weekends. Setting a weekend budget could help you save an additional $75 monthly.",
-    type: 'prediction'
-  },
-];
+
 
 // Month names for display
 const monthNames = [
@@ -52,7 +27,7 @@ const monthNames = [
 ];
 
 export default function Analytics() {
-  const [insights, setInsights] = useState(mockInsights);
+  const [insights, setInsights] = useState<Insight[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<UserData | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -78,11 +53,16 @@ export default function Analytics() {
           calculateMonthlySpending(userData.transactions || []);
           calculateCategoryBreakdown(userData.transactions || []);
         }
+        getInsights().then((insights) => {
+          setInsights(insights.insights);
+        });
         setLoading(false);
       }).catch(error => {
         console.error('Error fetching user data:', error);
         setLoading(false);
       });
+      
+      
       
       return () => {};
     }, [])
@@ -346,9 +326,9 @@ export default function Analytics() {
           insights.map((insight) => (
             <InsightCard
               key={insight.id}
-              title={insight.title}
-              description={insight.description}
-              type={insight.type as 'warning' | 'tip' | 'prediction'}
+              title={insight.insightTitle}
+              description={insight.insight}
+              type={insight.insightType}
               onDismiss={() => dismissInsight(insight.id)}
             />
           ))

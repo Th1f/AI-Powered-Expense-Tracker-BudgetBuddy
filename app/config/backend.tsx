@@ -257,4 +257,54 @@ export const deleteTransaction = async (transactionId: string) => {
     console.log(error);
   }
 }
+
+export const generateInsights = async () => {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('User is not authenticated');
+    }
+    console.log(user);
+
+    const token = await user.getIdToken();
+
+    const response = await fetch(`${BACKEND_URL}/api/auth/user/generateInsights`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+    });
+    const data = await response.json();
+    console.log(data);
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const getInsights = async () => {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error('User is not authenticated');
+    }
+    console.log(user);
+
+    const token = await user.getIdToken();
+
+    const response = await fetch(`${BACKEND_URL}/api/auth/user/getInsights`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+    });
+    const data = await response.json();
+    console.log(data);
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+}
   
