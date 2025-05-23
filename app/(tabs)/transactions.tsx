@@ -30,7 +30,6 @@ interface TransactionGroup {
   data: Transaction[];
 }
 
-// Helper function to group transactions by date
 const groupTransactionsByDate = (transactions: Transaction[]): TransactionGroup[] => {
   if (!transactions || transactions.length === 0) {
     return [];
@@ -40,17 +39,13 @@ const groupTransactionsByDate = (transactions: Transaction[]): TransactionGroup[
   
   transactions.forEach(transaction => {
     if (!transaction.date) return;
-    
-    // Handle string date format
     const dateKey = transaction.date.split('T')[0];
-    
     if (!groups[dateKey]) {
       groups[dateKey] = [];
     }
     groups[dateKey].push(transaction);
   });
   
-  // Convert to array of groups and sort by date (newest first)
   return Object.entries(groups)
     .map(([dateString, transactions]) => ({
       title: formatDateHeader(new Date(dateString)),
@@ -63,11 +58,9 @@ const groupTransactionsByDate = (transactions: Transaction[]): TransactionGroup[
     });
 };
 
-// Format date for section headers
 const formatDateHeader = (date: Date): string => {
   try {
     if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
-      // Handle invalid date by returning a fallback format
       return 'Unknown Date';
     }
     
