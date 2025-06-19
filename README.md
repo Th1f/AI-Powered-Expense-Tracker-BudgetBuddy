@@ -1,50 +1,48 @@
-# Welcome to your Expo app 👋
+# 💵 Budget Buddy A Simple AI Expense Tracker App
+## Tech Stack
+[![Google Gemini](https://img.shields.io/badge/Google%20Gemini-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white)](#)[![Firebase](https://img.shields.io/badge/firebase-ffca28?style=for-the-badge&logo=firebase&logoColor=black)](#)[![LangChain](https://img.shields.io/badge/langchain-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white)](#)[![Flask](https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white)](#)[![Next.js](https://img.shields.io/badge/React_Native-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](#)[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](#)[![Python](https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=blue)](#)
+- Infrastructure: Firebase + Google Cloud
+- AI Model: Gemini 1.5 Flash
+- Database: Firestore Database
+- Backend
+  - Language: Python
+  - Framework: Flask
+  - Authentication: Flask-Login
+  - CORS Handling: Flask-CORS
+  - Cloud Integration: Firebase Admin SDK
+- Frontend
+  - Framework: React Native
+  - Authentication: Firebase Authentication
+- Credentials Management: Firebase Credentials
+- Language Used
+  - Python: Backend
+  - HTML,CSS,TS: Frontend
+  - noSql: Firestore
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+BudgetBuddy is a comprehensive personal finance management application that helps users track expenses, manage budgets, and gain insights into their spending habits through an intuitive interface. Built with **_React Native_** and **_Expo_** for cross-platform functionality, the app utilizes **_TypeScript_** for robust code implementation and **_Firebase_** with **_Firestore_** for secure authentication and data storage. The backend is powered by a **_Flask API_** that integrates **_LangChain_** with **_Google Generative AI_** to provide intelligent expense categorization and personalized financial insights. The application features a modern UI with seamless navigation through React Navigation and Expo Router, demonstrating how **_AI-powered_** features can enhance financial management while maintaining real-time data synchronization between the mobile frontend and cloud backend.
 
-## Get started
+## Features 
+### User Authentication
+User Authentication Secure user registration and login using Firebase authentication with token verification for protected routes.
+### Budget Management
+Track overall budget with visual indicators of spending progress and remaining funds.
+### Transaction Tracking
+Record, categorize, and manage expenses and income with detailed transaction history.
+### Custom Categories 
+Create and customize spending categories with allocated budgets, color coding, and icons.
+### AI-Powered Categorization Automatic 
+Expense categorization using Google's Generative AI to intelligently sort transactions.
+###Financial Insights AI-generated 
+Personalized insights and recommendations based on spending patterns.
+###Category Budget Tracking 
+Monitor spending within specific categories with allocated vs. spent visualization.
+###Transaction Management 
+Add, edit, update, and delete transactions with automatic budget recalculation.
 
-1. Install dependencies
+## Usage
+1. Create an account
+2. Add expense/custom categories
+3. Use auto categorization feature
+4. Generate Insight
+5. View inisights and budget overview 
 
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-    npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
