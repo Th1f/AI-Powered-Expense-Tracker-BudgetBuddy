@@ -21,6 +21,29 @@
 
 BudgetBuddy is a comprehensive personal finance management application that helps users track expenses, manage budgets, and gain insights into their spending habits through an intuitive interface. Built with **_React Native_** and **_Expo_** for cross-platform functionality, the app utilizes **_TypeScript_** for robust code implementation and **_Firebase_** with **_Firestore_** for secure authentication and data storage. The backend is powered by a **_Flask API_** that integrates **_LangChain_** with **_Google Generative AI_** to provide intelligent expense categorization and personalized financial insights. The application features a modern UI with seamless navigation through React Navigation and Expo Router, demonstrating how **_AI-powered_** features can enhance financial management while maintaining real-time data synchronization between the mobile frontend and cloud backend.
 
+## Screens
+### Home
+![Home Page](https://github.com/Th1f/budgetbuddy/blob/master/screens/Home.PNG)
+
+### Add Expenses
+![Add Expenses Page](https://github.com/Th1f/budgetbuddy/blob/master/screens/AddExpense.PNG)
+
+### Transactions
+![Transaction Page](https://github.com/Th1f/budgetbuddy/blob/master/screens/transactions.PNG)
+
+### Budgets
+![Budgets Page](https://github.com/Th1f/budgetbuddy/blob/master/screens/budgets.PNG)
+
+### Analytics Page
+![Analytics Page](https://github.com/Th1f/budgetbuddy/blob/master/screens/Analyticts.PNG)
+
+### Login Page
+![Login Page](https://github.com/Th1f/budgetbuddy/blob/master/screens/login.PNG)
+
+### Sign up Page
+![Sign Up Page](https://github.com/Th1f/budgetbuddy/blob/master/screens/signup.PNG)
+
+
 ## Features 
 ### User Authentication
 User Authentication Secure user registration and login using Firebase authentication with token verification for protected routes.
