@@ -55,11 +55,11 @@ Record, categorize, and manage expenses and income with detailed transaction his
 Create and customize spending categories with allocated budgets, color coding, and icons.
 ### AI-Powered Categorization Automatic 
 Expense categorization using Google's Generative AI to intelligently sort transactions.
-###Financial Insights AI-generated 
+### Financial Insights AI-generated 
 Personalized insights and recommendations based on spending patterns.
-###Category Budget Tracking 
+### Category Budget Tracking 
 Monitor spending within specific categories with allocated vs. spent visualization.
-###Transaction Management 
+### Transaction Management 
 Add, edit, update, and delete transactions with automatic budget recalculation.
 
 ## Usage
